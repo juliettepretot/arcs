@@ -111,6 +111,10 @@ export class Planificator {
   }
 
   registerVisibleSuggestionsChangedCallback(callback) {
+    // TODO(sjmiles): need similar treatment in registerSuggestionsChangedCallback
+    if (this.consumer.currentSuggestions) {
+      callback(this.consumer.currentSuggestions);
+    }
     this.consumer.registerVisibleSuggestionsChangedCallback(callback);
   }
 

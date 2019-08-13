@@ -42,7 +42,7 @@ function asTypeLiteral(t: Type | TypeLiteral) : TypeLiteral {
 export function isRoot({name, tags, id, type}: {name: string, tags: string[], id?: string, type?: Type}): boolean {
   const rootNames: string[] = [
     'root',
-    'toproot',
+    'top',
     'modal'
   ];
 
@@ -480,9 +480,9 @@ export class ParticleSpec {
               throw new Error(`Can't make a check on handle ${handleName} (not an input handle).`);
             }
             if (handle.check) {
-              throw new Error(`Can't make multiple checks on the same input (${handleName}).`); 
+              throw new Error(`Can't make multiple checks on the same input (${handleName}).`);
             }
-            
+
             handle.check = createCheck(handle, check, this.handleConnectionMap);
             results.push(handle.check);
             break;

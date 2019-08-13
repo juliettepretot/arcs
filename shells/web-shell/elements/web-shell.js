@@ -54,9 +54,22 @@ const template = Xen.Template.html`
       background-color: white;
     }
   </style>
-  <!-- manage configuration (read and persist) -->
-  <web-config arckey="{{arckey}}" on-config="onState"></web-config>
-  <!-- ui chrome -->
+  <!-- non-visual elements -->
+  <div hidden>
+    <!-- manage configuration (read and persist) -->
+    <web-config arckey="{{arckey}}" on-config="onState"></web-config>
+    <!-- user context -->
+    <web-context storage="{{storage}}" context="{{precontext}}" on-context="onState"></web-context>
+    <!-- web planner -->
+    <web-planner config="{{config}}" arc="{{plannerArc}}" search="{{search}}" on-metaplans="onState" on-suggestions="onSuggestions"></web-planner>
+    <!-- background arcs -->
+    <web-arc id="nullArc" hidden storage="{{storage}}" config="{{nullConfig}}" context="{{context}}" on-arc="onNullArc"></web-arc>
+    <!-- <web-arc id="folksArc" hidden storage="{{storage}}" config="{{folksConfig}}" context="{{context}}" on-arc="onFolksArc"></web-arc> -->
+    <!-- <web-arc id="pipesArc" hidden storage="{{storage}}" config="{{pipesConfig}}" context="{{context}}" on-arc="onPipesArc"></web-arc> -->
+    <!-- data pipes -->
+    <!-- <device-client-pipe context="{{context}}" storage="{{storage}}" arc="{{arc}}" pipearc="{{pipesArc}}" suggestions="{{suggestions}}" on-search="onState" on-client-arc="onPipeClientArc" on-suggestion="onChooseSuggestion" on-spawn="onRequestPipeArc" on-reset="onReset"></device-client-pipe> -->
+  </div>
+  <!-- ui -->
   <web-shell-ui arc="{{arc}}" launcherarc="{{launcherArc}}" context="{{context}}" nullarc="{{nullArc}}" pipesarc="{{pipesArc}}" search="{{search}}" on-search="onState" showhint="{{showHint}}">
     <!-- launcher -->
     <arc-element id="launcher" hidden="{{hideLauncher}}" storage="{{storage}}" context="{{context}}" config="{{launcherConfig}}" on-arc="onLauncherArc"></arc-element>
@@ -69,16 +82,6 @@ const template = Xen.Template.html`
       <div slotid="suggestions" on-plan-choose="onChooseSuggestion"></div>
     </div>
   </web-shell-ui>
-  <!-- user context -->
-  <web-context storage="{{storage}}" context="{{precontext}}" on-context="onState"></web-context>
-  <!-- web planner -->
-  <web-planner config="{{config}}" arc="{{plannerArc}}" search="{{search}}" on-metaplans="onState" on-suggestions="onSuggestions"></web-planner>
-  <!-- background arcs -->
-  <web-arc id="nullArc" hidden storage="{{storage}}" config="{{nullConfig}}" context="{{context}}" on-arc="onNullArc"></web-arc>
-  <!-- <web-arc id="folksArc" hidden storage="{{storage}}" config="{{folksConfig}}" context="{{context}}" on-arc="onFolksArc"></web-arc> -->
-  <!-- <web-arc id="pipesArc" hidden storage="{{storage}}" config="{{pipesConfig}}" context="{{context}}" on-arc="onPipesArc"></web-arc> -->
-  <!-- data pipes -->
-  <!-- <device-client-pipe context="{{context}}" storage="{{storage}}" arc="{{arc}}" pipearc="{{pipesArc}}" suggestions="{{suggestions}}" on-search="onState" on-client-arc="onPipeClientArc" on-suggestion="onChooseSuggestion" on-spawn="onRequestPipeArc" on-reset="onReset"></device-client-pipe> -->
 `;
 
 const log = Xen.logFactory('WebShell', '#6660ac');
@@ -104,10 +107,10 @@ export class WebShell extends Xen.Debug(Xen.Async, log) {
     window.context = state.context;
     super._update(props, state, oldProps, oldState);
   }
-  async update(props, state) {
+  async update(props, state, lastProps, lastState) {
     // new config?
-    if (state.config !== state._config) {
-      const {config} = state;
+    const {config} = state;
+    if (config !== state._config) {
       state._config = config;
       if (config) {
         state.storage = config.storage;
@@ -116,17 +119,17 @@ export class WebShell extends Xen.Debug(Xen.Async, log) {
       }
     }
     if (state.ready) {
-      this.readyUpdate(props, state);
+      this.readyUpdate(props, state, lastProps, lastState);
     }
   }
-  readyUpdate({root}, state) {
+  readyUpdate({root}, state, lastProps, lastState) {
     // setup environment once we have a root and a user
     if (!state.env && root) {
       state.env = this.configureEnv(root);
       this.configureContext();
     }
     // spin up launcher arc
-    if (!state.launcherConfig && state.env) {
+    if (state.env && !state.launcherConfig) {
       this.configureLauncher();
     }
     // poll for arcs-store
@@ -147,17 +150,24 @@ export class WebShell extends Xen.Debug(Xen.Async, log) {
       state.suggestion = null;
     }
     // consume an arckey
-    if (state.env && state.arckey && state.context) {
-      //if (!state.arcConfig || (state.arcConfig.key !== state.arckey)) {
-        // spin up arc from key
-        this.configureArcFromKey(state.arckey);
-      //}
+    if (state.arckey && state.context) {
+      // spin up arc from key
+      this.configureArcFromKey(state.arckey);
     }
     // flush arc metadata to storage
     if (state.arc && state.arcMeta) {
       if (state.writtenArcMeta !== state.arcMeta) {
         state.writtenArcMeta = state.arcMeta;
         this.recordArcMeta(state.arcMeta);
+      }
+    }
+    if (state.suggestions !== lastState.suggestions) {
+      const container = this.host.querySelector('[slotid="suggestions"]');
+      log('suggestions', state.suggestions, container);
+      if (container) {
+        container.innerText = '';
+        state.suggestions.forEach(suggestion =>
+          container.appendChild(document.createElement('suggestion-element')).plan = suggestion);
       }
     }
     this.state = {hideLauncher: Boolean(state.arckey)};
@@ -297,6 +307,9 @@ export class WebShell extends Xen.Debug(Xen.Async, log) {
   }
   async recordArcMeta(meta) {
     if (this.state.store) {
+      if (!meta.description) {
+        meta.description = `(untitled Arc)`;
+      }
       await this.state.store.store({id: meta.key, rawData: meta}, [generateId()]);
     } else {
       log('failed to record arc metadata: no store');

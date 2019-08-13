@@ -529,6 +529,10 @@ export abstract class PECInnerPort extends APIPort {
   abstract onStopRender(particle: Particle, slotName: string);
 
   Render(@Mapped particle: Particle, @Direct slotName: string, @Direct content: Content) {}
+  //Render(@Mapped particle: Particle, @Direct slotName: string, @Direct content: string) {}
+  // TODO(sjmiles): alternate render path for UiBroker
+  Output(@Mapped particle: Particle, @Direct content: {}) {}
+
   InitializeProxy(@Mapped handle: StorageProxy, @LocalMapped callback: (data: {version: number}) => void) {}
   SynchronizeProxy(@Mapped handle: StorageProxy, @LocalMapped callback: (data: {version: number, model: SerializedModelEntry[]}) => void) {}
   HandleGet(@Mapped handle: StorageProxy, @LocalMapped callback: (data: {id: string}) => void) {}

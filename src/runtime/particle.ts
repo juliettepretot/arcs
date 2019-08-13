@@ -22,6 +22,7 @@ import {Entity, EntityRawData, MutableEntityData} from './entity.js';
 export interface Capabilities {
   constructInnerArc?: (particle: Particle) => Promise<InnerArcHandle>;
   serviceRequest?: (particle: Particle, args, callback) => void;
+  output?
 }
 
 /**
@@ -270,6 +271,14 @@ export class Particle {
 
   mutate(entity: Entity, mutation: Consumer<MutableEntityData> | {}): void {
     Entity.mutate(entity, mutation);
+  }
+
+  // TODO(sjmiles): alternate render path for UiBroker
+  output(content) {
+    const output = this.capabilities['output'];
+    if (output) {
+      output(this, content);
+    }
   }
 
   // abstract

@@ -342,4 +342,12 @@ class PECOuterPortImpl extends PECOuterPort {
     const response = await Services.request(request);
     this.SimpleCallback(callback, response);
   }
+
+  // TODO(sjmiles): experimental `output` impl
+  onOutput(particle: Particle, content: {}) {
+    const composer = this.arc.pec.slotComposer;
+    if (composer && composer["delegateOutput"]) {
+      composer["delegateOutput"](particle, content);
+    }
+  }
 }

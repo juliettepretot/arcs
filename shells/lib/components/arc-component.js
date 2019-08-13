@@ -8,12 +8,13 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
+import {logsFactory} from '../../../build/runtime/log-factory.js';
+import {attachRenderer} from '../renderer.js';
+import {RamSlotComposer} from './ram-slot-composer.js';
 import {Xen} from './xen.js';
 import {ArcHost} from './arc-host.js';
-import {DomSlotComposer} from './dom-slot-composer.js';
-import {logFactory} from '../../../build/platform/log-web.js';
 
-const log = logFactory('ArcComponent', '#cb23a6');
+const {log} = logsFactory('ArcComponent', '#cb23a6');
 
 // TODO(sjmiles): custom elements must derive from HTMLElement. Because we want to choose whether to make this an
 // element or not (flexible derivation), we implement as a mixin.
@@ -27,9 +28,6 @@ export const ArcComponentMixin = Base => class extends Base {
   propChanged(name) {
     return (this.props[name] !== this._lastProps[name]);
   }
-  //fire(name, value) {
-    // TODO(sjmiles): Implement generic event thingie here? Maybe build into XenState? A different mixin? Be abstract?
-  //}
   update(props, state) {
     if (this.propChanged('config')) {
       if (state.host) {
@@ -54,13 +52,21 @@ export const ArcComponentMixin = Base => class extends Base {
   }
   createHost({context, storage, composer, config}) {
     log('creating host');
+    composer = new RamSlotComposer();
+    // TODO(sjmiles): build into composer ini?
     const containers = this.containers || {};
+    const first = Object.values(containers).pop();
+    composer.root = first ? first.parentNode : document;
+    attachRenderer(composer);
+    this.state = {composer};
+    /*
     if (!composer) {
       if (config.suggestionContainer) {
         containers.suggestions = config.suggestionContainer;
       }
       composer = new DomSlotComposer({containers});
     }
+    */
     return new ArcHost(context, storage, composer);
   }
   spawnArc(host, config) {

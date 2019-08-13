@@ -105,7 +105,10 @@ constructor({id, context, pecFactories, slotComposer, loader, storageKey, storag
     this._context = context || new Manifest({id});
     // TODO: pecFactories should not be optional. update all callers and fix here.
     this.pecFactories = pecFactories && pecFactories.length > 0 ? pecFactories.slice() : [FakePecFactory(loader).bind(null)];
-
+    // TODO(sjmiles): atm UiBroker needs to recover (primary) arc from composer (fixme)
+    if (slotComposer && !slotComposer['arc']) {
+      slotComposer['arc'] = this;
+    }
     if (typeof id === 'string') {
       // TODO(csilvestrini): Replace this warning with an exception.
       console.error(
@@ -125,7 +128,7 @@ constructor({id, context, pecFactories, slotComposer, loader, storageKey, storag
     const ports = this.pecFactories.map(f => f(this.generateID(), this.idGenerator));
     this.pec = new ParticleExecutionHost(slotComposer, this, ports);
     this.storageProviderFactory = storageProviderFactory || new StorageProviderFactory(this.id);
-    
+
     this.volatileStorageDriverProvider = new VolatileStorageDriverProvider(this);
     DriverFactory.register(this.volatileStorageDriverProvider);
   }
@@ -286,7 +289,7 @@ constructor({id, context, pecFactories, slotComposer, loader, storageKey, storag
           const storeId = context.dataResources.get(storageKey);
           serializedData.forEach(a => {a.storageKey = storeId;});
         }
-        
+
         const indent = '  ';
         const data = JSON.stringify(serializedData);
 
@@ -602,6 +605,8 @@ ${this.activeRecipe.toString()}`;
       // shell pre-populates all arcs with a set of handles so if a recipe explicitly
       // asks for one of these there's a conflict. Ideally these will end up as a
       // part of the context and will be populated on-demand like everything else.
+      // UPDATE(sjmiles): Shell no longer pre-populates anything, but removing this
+      // code results in errors. Needs root cause (possibly related to multiplexing).
       if (this.storesById.has(recipeHandle.id)) {
         continue;
       }

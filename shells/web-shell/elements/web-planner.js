@@ -13,7 +13,6 @@ import {Planificator} from '../../../build/planning/arcs-planning.js';
 import {devtoolsPlannerInspectorFactory} from '../../../build/devtools-connector/devtools-planner-inspector.js';
 
 const log = Xen.logFactory('WebPlanner', '#104a91');
-//const error = Xen.logFactory('WebPlanner', '#104a91', 'error');
 
 class WebPlanner extends Xen.Debug(Xen.Async, log) {
   static get observedAttributes() {
@@ -50,14 +49,17 @@ class WebPlanner extends Xen.Debug(Xen.Async, log) {
       inspectorFactory: devtoolsPlannerInspectorFactory
     };
     const planificator = await Planificator.create(arc, options);
-    planificator.registerVisibleSuggestionsChangedCallback(suggestions => this._suggestionsChanged(planificator, suggestions));
-    planificator.loadSuggestions && await planificator.loadSuggestions();
     window.planificator = planificator; // for debugging only
+    planificator.loadSuggestions && await planificator.loadSuggestions();
+    planificator.registerVisibleSuggestionsChangedCallback(
+      suggestions => this._suggestionsChanged(planificator, suggestions)
+    );
+    log('registered planificator callback');
     return planificator;
   }
   _suggestionsChanged(planificator, suggestions) {
     // TODO(sjmiles): maybe have @mmandlis do this at planner, also note that
-    // suggestion.versionByStore is avaialble for validation against arc.getVersionByStore()
+    // suggestion.versionByStore is available for validation against arc.getVersionByStore()
     suggestions.arcid = planificator.arc.id.toString();
     log('suggestionsChanged', suggestions.arcid);
     this.fire('suggestions', suggestions);

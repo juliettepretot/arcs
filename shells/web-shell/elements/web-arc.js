@@ -10,29 +10,30 @@
 
 import {Xen} from '../../lib/components/xen.js';
 import {ArcHost} from '../../lib/components/arc-host.js';
-import {DomSlotComposer} from '../../lib/components/dom-slot-composer.js';
+import {RamSlotComposer} from '../../lib/components/ram-slot-composer.js';
+import {attachRenderer} from '../../lib/renderer.js';
 
 const log = Xen.logFactory('WebArc', '#cb23a6');
 
 const template = Xen.Template.html`
-  <style>
-    :host {
-      display: block;
-    }
-    [slotid="modal"] {
-      position: fixed;
-      top: 0;
-      right: 0;
-      bottom: 0;
-      left: 0;
-      box-sizing: border-box;
-      pointer-events: none;
-    }
-  </style>
-  <div slotid="toproot"></div>
-  <div slotid="root"></div>
-  <div slotid="modal"></div>
-`;
+<style>
+  :host {
+    display: block;
+  }
+  [slotid="modal"] {
+    position: fixed;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    box-sizing: border-box;
+    pointer-events: none;
+  }
+</style>
+<div slotid="top" id="rootslotid-top"></div>
+<div slotid="root" id="rootslotid-root"></div>
+<div slotid="modal" id="rootslotid-modal"></div>
+  `;
 
 /*
  * TODO(sjmiles): this is messed up, fix:
@@ -50,7 +51,7 @@ export class WebArc extends Xen.Debug(Xen.Async, log) {
     return template;
   }
   _didMount() {
-    const slots = ['toproot', 'root', 'modal'];
+    const slots = ['top', 'root', 'modal'];
     this.containers = {};
     slots.forEach(slot => {
       this.containers[slot] = this.host.querySelector(`[slotid="${slot}"]`);
@@ -82,12 +83,20 @@ export class WebArc extends Xen.Debug(Xen.Async, log) {
   createHost() {
     log('creating host');
     let {context, storage, composer, config} = this.props;
-    if (config.suggestionContainer) {
-      this.containers.suggestions = config.suggestionContainer;
-    }
-    if (!composer) {
-      composer = new DomSlotComposer({containers: this.containers});
-    }
+    composer = new RamSlotComposer({
+      top: 'top',
+      root: 'root',
+      modal: 'modal',
+    });
+    composer.root = this.host;
+    attachRenderer(composer);
+    this.state = {composer};
+    // if (config.suggestionContainer) {
+    //   this.containers.suggestions = config.suggestionContainer;
+    // }
+    // if (!composer) {
+    //   composer = new DomSlotComposer({containers: this.containers});
+    // }
     return new ArcHost(context, storage, composer);
   }
   disposeArc(host) {

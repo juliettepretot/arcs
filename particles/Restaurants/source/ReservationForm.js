@@ -8,7 +8,7 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-defineParticle(({DomParticle, html}) => {
+defineParticle(({UiParticle, html}) => {
 
   const template = html`
 
@@ -92,7 +92,7 @@ defineParticle(({DomParticle, html}) => {
 </template>
     `;
 
-  return class extends DomParticle {
+  return class extends UiParticle {
     get template() {
       return template;
     }
@@ -122,7 +122,7 @@ defineParticle(({DomParticle, html}) => {
         timePicker[`selected${i}`] = Boolean(partySize == i);
       }
       return {
-        subId: restaurantId,
+        subid: restaurantId,
         timePicker: {
           $template: 'time-picker',
           models: [timePicker]

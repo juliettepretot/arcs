@@ -107,6 +107,7 @@ export class SuggestionElement extends Xen.Async {
   update({plan}, state) {
     if (plan) {
       this.setAttribute('hash', plan.hash);
+      this.innerHTML = plan.descriptionText;
     }
   }
   _didRender() {

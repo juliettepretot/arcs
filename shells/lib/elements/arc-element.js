@@ -31,9 +31,9 @@ const template = Xen.Template.html`
       pointer-events: none;
     }
   </style>
-  <div slotid="toproot"></div>
-  <div slotid="root"></div>
-  <div slotid="modal"></div>
+  <div slotid="top" id="topslotid-root"></div>
+  <div slotid="root" id="rootslotid-root"></div>
+  <div slotid="modal" id="modalslotid-root"></div>
 `;
 
 const ArcElementMixin = Base => class extends Base {
@@ -42,7 +42,7 @@ const ArcElementMixin = Base => class extends Base {
   }
   _didMount() {
     this.containers = {
-      toproot: this.host.querySelector('[slotid="toproot"]'),
+      top: this.host.querySelector('[slotid="top"]'),
       root: this.host.querySelector('[slotid="root"]'),
       modal: this.host.querySelector('[slotid="modal"]')
     };

@@ -38,7 +38,7 @@ export class Slot implements Comparable<Slot> {
   set id(id: string) { this._id = id; }
   get localName(): string|undefined { return this._localName; }
   set localName(localName) { this._localName = localName; }
-  get name(): string { return this._name; }
+  get name(): string { return this._name || ''; }
   set name(name) { this._name = name; }
   get tags() { return this._tags; }
   set tags(tags) { this._tags = tags; }
@@ -89,7 +89,7 @@ export class Slot implements Comparable<Slot> {
     }
     this._consumeConnections.forEach(connection => {
       const clonedConnection = cloneMap.get(connection);
-      
+
       if (clonedConnection && clonedConnection instanceof SlotConnection && clonedConnection.targetSlot == undefined) {
         clonedConnection.connectToSlot(slot);
       }

@@ -28,4 +28,9 @@ export class ModalityHandler {
     SlotDomConsumer,
     DescriptionDomFormatter
   );
+
+  static readonly basicHandler : ModalityHandler = new ModalityHandler(
+    SlotConsumer,
+    DescriptionFormatter
+  );
 }
