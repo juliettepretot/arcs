@@ -45,7 +45,7 @@ export class SlotProxy {
     this.apiPort.Render(this.particle, this.slotName, content);
 
     Object.keys(content).forEach(key => { this.requestedContentTypes.delete(key); });
-    // Slot is considered rendered, if a non-empty content was sent and all requested content types were fullfilled.
+    // Slot is considered rendered, if a non-empty content was sent and all requested content types were fulfilled.
     this._isRendered = this.requestedContentTypes.size === 0 && (Object.keys(content).length > 0);
   }
 
@@ -70,12 +70,12 @@ export class SlotProxy {
   }
 
   /**
-   * Called by PEC to remove all rendering capabilities to this slotProxy from the current 
-   * particle and give them to the given particle. 
+   * Called by PEC to remove all rendering capabilities to this slotProxy from the current
+   * particle and give them to the given particle.
    */
   rewire(particle: Particle): void {
     this.particle.removeSlotProxy(this.slotName);
-    
+
     this.particle = particle;
     this._isRendered = false;
     this.particle.addSlotProxy(this);

@@ -29,7 +29,7 @@ public class SlotProxy {
     PortableJson contentJson = jsonParser.parse(content);
     this.apiPort.Render(particle, slotName, contentJson);
     contentJson.forEach(key -> requestedContentTypes.remove(key));
-    // Slot is considered rendered, if a non-empty content was sent and all requested content types were fullfilled.
+    // Slot is considered rendered, if a non-empty content was sent and all requested content types were fulfilled.
     this.isRendered = requestedContentTypes.size() == 0 && contentJson.keys().size() == 0;
   }
 }
