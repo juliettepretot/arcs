@@ -116,8 +116,8 @@ export class UiSlotComposer {
     return this._contexts.filter(filter) as ProvidedSlotContext[];
   }
 
-  findContextById(slotId: string): SlotContext {
-    return this._contexts.find(({id}) => id === slotId);
+  findContextById(slotId: string): any {
+    return this._contexts.find(({id}) => id === slotId) || {};
   }
 
   createHostedSlot(innerArc: Arc, particle: Particle, slotName: string, storeId: string): string {
