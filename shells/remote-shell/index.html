@@ -1,0 +1,64 @@
+<!doctype html>
+
+<title>RemoteShell</title>
+
+<style>
+  body {
+    margin: 0;
+    height: 100vh;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    border: 2px solid lightblue;
+    font-family: sans-serif;
+  }
+  [container] {
+    box-sizing: border-box;
+    display: flex;
+    margin: 4px;
+  }
+  [row] {
+    flex-direction: column;
+  }
+  [flex] {
+    flex: 1;
+  }
+  [orange] {
+    border: 3px solid orange;
+  }
+  [purple] {
+    border: 3px solid purple;
+  }
+  span {
+    display: block;
+    padding: 4px;
+  }
+  [bold] {
+    font-weight: bold;
+  }
+  [big] {
+    font-size: 130%;
+  }
+</style>
+
+<div flex row container>
+  <span big>Remote Shell</span>
+  <span>
+    Remote Shell owns the other two processes and connects things together.
+    Remote Shell gets things started by sending commands to the Arcs Process.
+    Remote Shell forwards rendering commands to the Rendering Surface which actually composes DOM.
+  </span>
+
+  <div orange row container>
+    <span big>Arcs (Runtime) Process</span>
+    <span>Runtime process is where the runtime code lives and the Arcs work takes place. It needs commands to do anything.</span>
+    <iframe style="height: 32px;" id="arcs" src="../pipes-shell/web/index.html?log"></iframe>
+  </div>
+
+  <div purple flex row container>
+    <span big>Rendering Surface</span>
+    <iframe flex id="surface" src="./surface.html?log"></iframe>
+  </div>
+</div>
+
+<script type="module" src="index.js"></script>

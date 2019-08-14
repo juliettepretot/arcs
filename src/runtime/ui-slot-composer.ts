@@ -165,7 +165,7 @@ export class UiSlotComposer {
       // is allowed under new rendering factorisation. Maybe we bring this back as a validity
       // test in the future, but it's not a requirement atm.
       //assert(context, `No context found for ${consumer.consumeConn.getQualifiedName()}`);
-      if (context) {
+      if (context && context.addSlotConsumer) {
         context.addSlotConsumer(consumer);
       }
     });

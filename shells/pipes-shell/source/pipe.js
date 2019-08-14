@@ -11,15 +11,16 @@
 //import {logsFactory} from '../../../build/runtime/log-factory.js';
 import {Utils} from '../../lib/runtime/utils.js';
 import {requireContext} from './context.js';
-import {marshalIngestionArc} from './pipes-api.js';
+import {requireIngestionArc} from './ingestion-arc.js';
 import {dispatcher} from './dispatcher.js';
 import {Bus} from './bus.js';
 import {pec} from './verbs/pec.js';
 import {spawn} from './verbs/spawn.js';
+import {RamSlotComposer} from '../../lib/components/ram-slot-composer.js';
 
 //const {log, warn} = logsFactory('pipe');
 
-export const initPipe = async (client, paths, storage, composerFactory) => {
+export const initPipe = async (client, paths, storage) => {
   // configure arcs environment
   Utils.init(paths.root, paths.map);
   // marshal context
@@ -28,16 +29,16 @@ export const initPipe = async (client, paths, storage, composerFactory) => {
   populateDispatcher(dispatcher, composerFactory, storage, context);
   // create bus
   const bus = new Bus(dispatcher, client);
-  // send pipe identifiers to client
-  identifyPipe(context, bus);
   // return bus
   return bus;
 };
 
 export const initArcs = async (storage, bus) => {
   const context = await requireContext();
-  // marshal ingestion arc.
-  await marshalIngestionArc(storage, context, bus);
+  // marshal ingestion arc
+  await requireIngestionArc(storage, bus);
+  // send pipe identifiers to client
+  identifyPipe(context, bus);
 };
 
 const identifyPipe = async (context, bus) => {
@@ -52,7 +53,61 @@ const populateDispatcher = (dispatcher, composerFactory, storage, context) => {
     },
     spawn: async (msg, tid, bus) => {
       return await spawn(msg, tid, bus, composerFactory, storage, context);
+    },
+    event: async (msg, tid, bus) => {
+      const arc = await bus.getAsyncValue(msg.tid);
+      if (arc && arc.pec && arc.pec.slotComposer) {
+        arc.pec.slotComposer.slotObserver.fire(arc, msg.pid, msg.eventlet);
+      }
     }
   });
   return dispatcher;
+};
+
+const composerFactory = (modality, bus) => {
+  switch (modality) {
+    case 'bus': {
+      const composer = new RamSlotComposer({
+        top: 'top',
+        root: 'root',
+        modal: 'modal'
+      });
+      // TODO(sjmiles): slotObserver could be late attached
+      // or we could attach a thunk that dispatches to an actual
+      // broker configured elsewhere.
+      composer.slotObserver = brokerFactory(bus);
+      return composer;
+    }
+    default: {
+      return new RamSlotComposer();
+    }
+  }
+};
+
+const brokerFactory = bus => {
+  return {
+    observe: output => {
+      console.log('UiBroker received', output);
+      const content = output;
+      content.particle = {
+        name: output.particle.name,
+        id: String(output.particle.id)
+      };
+      bus.send({message: 'slot', content: output});
+    },
+    fire: (arc, pid, eventlet) => {
+      if (arc) {
+        const particle = arc.activeRecipe.particles.find(
+          particle => String(particle.id) === pid
+        );
+        if (particle) {
+          console.warn('firing PEC event for', particle.name);
+          // TODO(sjmiles): we need `arc` and `particle` here even though
+          // the two are bound together, figure out how to simplify
+          arc.pec.sendEvent(particle, /*slotName*/'', eventlet);
+        }
+      }
+    },
+    dispose: () => null
+  };
 };
