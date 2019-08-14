@@ -96,14 +96,14 @@ recipe
       assert.lengthOf(consumer.result.suggestions, 1);
       assert.lengthOf(consumer.getCurrentSuggestions(), 0);
       assert.strictEqual(suggestionsChangeCount, 1);
-      assert.strictEqual(visibleSuggestionsChangeCount, 2);
+      assert.strictEqual(visibleSuggestionsChangeCount, 2, 'wrong visibleSuggestionCount');
 
       await helper.acceptSuggestion({particles: ['ItemMultiplexer', 'List']});
       await helper.makePlans();
       await storeResults(consumer, helper.suggestions);
       assert.lengthOf(consumer.result.suggestions, 3);
       // The [Test1, Test2] recipe is not contextual, and only suggested for search *.
-      assert.lengthOf(consumer.getCurrentSuggestions(), 2);
+      assert.lengthOf(consumer.getCurrentSuggestions(), 2, 'wrong consumer.getCurrentSuggestions().length');
 
       consumer.setSuggestFilter(true);
       assert.lengthOf(consumer.getCurrentSuggestions(), 3);
