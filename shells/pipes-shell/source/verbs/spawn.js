@@ -27,7 +27,7 @@ export const spawn = async ({modality, recipe}, tid, bus, composerFactory, stora
       context,
       //storage,
       id: generateId(),
-      composer: composerFactory(modality, bus),
+      composer: composerFactory(modality, bus, tid),
       portFactories: [portIndustry(bus)]
     });
     // optionally instantiate recipe
@@ -37,6 +37,15 @@ export const spawn = async ({modality, recipe}, tid, bus, composerFactory, stora
       }
     }
     return arc;
+  }
+};
+
+export const instantiateRecipeByName = async (arc, name) => {
+  const recipe = arc.context.allRecipes.find(r => r.name === name);
+  if (!recipe) {
+    warn(`found no recipes matching [${name}]`);
+  } else {
+    await instantiateRecipe(arc, recipe);
   }
 };
 
@@ -60,3 +69,4 @@ const observeOutput = async (tid, bus, arc) => {
     }
   }
 };
+

@@ -46,6 +46,7 @@ particle ReservationMultiAnnotation in 'source/ReservationAnnotation.js'
 // when I do that.
 
 recipe MakeReservations
+  use as restaurants
   use #selected as restaurant
   create #reservation as event
   create #volatile as calendarDescriptions
@@ -62,7 +63,7 @@ recipe MakeReservations
     consume action as top
   // per-restaurant tile scheduler
   AnnotationMultiplexer
-    //list = [sourced by Coalescer]
+    list = restaurants
     annotation = event
     hostedParticle = ReservationMultiAnnotation
   // event editor (+scheduler) on restaurant detail
@@ -72,7 +73,6 @@ recipe MakeReservations
     consume detailAction
       provide annotation as detailAnnotation
   ReservationAnnotation
-    //list = [sourced by Coalescer]
     restaurant = restaurant
     event = event
     descriptions = annotationDescriptions

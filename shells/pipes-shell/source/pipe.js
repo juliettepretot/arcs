@@ -8,17 +8,17 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-//import {logsFactory} from '../../../build/runtime/log-factory.js';
 import {Utils} from '../../lib/runtime/utils.js';
 import {requireContext} from './context.js';
 import {requireIngestionArc} from './ingestion-arc.js';
 import {dispatcher} from './dispatcher.js';
 import {Bus} from './bus.js';
 import {pec} from './verbs/pec.js';
-import {spawn} from './verbs/spawn.js';
+import {spawn, instantiateRecipeByName} from './verbs/spawn.js';
 import {RamSlotComposer} from '../../lib/components/ram-slot-composer.js';
+import {logsFactory} from '../../../build/runtime/log-factory.js';
 
-//const {log, warn} = logsFactory('pipe');
+const {log, warn} = logsFactory('pipe');
 
 export const initPipe = async (client, paths, storage) => {
   // configure arcs environment
@@ -54,6 +54,12 @@ const populateDispatcher = (dispatcher, composerFactory, storage, context) => {
     spawn: async (msg, tid, bus) => {
       return await spawn(msg, tid, bus, composerFactory, storage, context);
     },
+    recipe: async (msg, tid, bus) => {
+      const arc = await bus.getAsyncValue(msg.tid);
+      if (arc) {
+        return await instantiateRecipeByName(arc, msg.recipe);
+      }
+    },
     event: async (msg, tid, bus) => {
       const arc = await bus.getAsyncValue(msg.tid);
       if (arc && arc.pec && arc.pec.slotComposer) {
@@ -64,7 +70,7 @@ const populateDispatcher = (dispatcher, composerFactory, storage, context) => {
   return dispatcher;
 };
 
-const composerFactory = (modality, bus) => {
+const composerFactory = (modality, bus, tid) => {
   switch (modality) {
     case 'bus': {
       const composer = new RamSlotComposer({
@@ -72,6 +78,8 @@ const composerFactory = (modality, bus) => {
         root: 'root',
         modal: 'modal'
       });
+      // TODO(sjmiles): hack in transaction identity, make this cleaner
+      composer.tid = tid;
       // TODO(sjmiles): slotObserver could be late attached
       // or we could attach a thunk that dispatches to an actual
       // broker configured elsewhere.
@@ -101,7 +109,7 @@ const brokerFactory = bus => {
           particle => String(particle.id) === pid
         );
         if (particle) {
-          console.warn('firing PEC event for', particle.name);
+          log('firing PEC event for', particle.name);
           // TODO(sjmiles): we need `arc` and `particle` here even though
           // the two are bound together, figure out how to simplify
           arc.pec.sendEvent(particle, /*slotName*/'', eventlet);

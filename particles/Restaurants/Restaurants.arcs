@@ -3,6 +3,7 @@ import 'RestaurantDisplay.arcs'
 import 'Reservations.arcs'
 import '../List/List.arcs'
 import '../Profile/Geolocate.arcs'
+import '../Layout/Layout.arcs'
 
 import 'FavoriteFoodAnnotation.arcs'
 

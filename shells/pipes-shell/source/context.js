@@ -11,7 +11,7 @@
 import {Utils} from '../../lib/runtime/utils.js';
 
 const manifest = `
-import 'https://$particles/PipeApps/RenderNotification.arcs'
+import 'https://$particles/Notification/Notification.arcs'
 import 'https://$particles/Restaurants/Restaurants.arcs'
 `;
 

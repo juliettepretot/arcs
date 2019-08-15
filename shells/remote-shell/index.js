@@ -47,7 +47,8 @@
  *
  */
 
-const recipe = 'Restaurants';
+const recipe = 'Notification';
+//const recipe = 'Restaurants';
 
 let send; // function to send messages over the bus, it's late-bound (when the client declares readiness)
 let arcTid; // transaction-id that identifies our arc
@@ -79,16 +80,96 @@ arcs.contentWindow.DeviceClient = {
 // uiBroker communicates with the ui surface
 // - sends render packets
 // - receives event packets
+// NOTE(sjmiles): calls to uiBroker are from the PipesShell realm?
 const uiBroker = {
   render(content) {
-    // locate the renderer
-    const {renderer} = surface.contentWindow;
-    // attach an event dispatcher
-    renderer.dispatch = (pid, eventlet) => {
-      // `send` and `arcTid` are module variables, only one arc atm
-      send({message: 'event', tid: arcTid, pid, eventlet});
-    };
-    // send message to renderer
-    renderer.render(content);
+    switch (content.model && content.model.modality) {
+      case 'notification':
+        addToast(content.model.text);
+        break;
+      default:
+        renderToSurface(content);
+    }
   }
+};
+
+// dynamic render surface
+
+const createRenderSurface = () => {
+  const href = new URL('surface.html?log', location.href).href;
+  return open(href, '', 'resizable=1, scrollbars=1');
+};
+
+let renderSurface;
+
+const waitForRenderSurface = async () => {
+  if (!renderSurface) {
+    renderSurface = createRenderSurface();
+    // TODO(sjmiles): could wait for explicit signal, but this is MVP
+    await new Promise(resolve => setTimeout(resolve, 300));
+  }
+  return renderSurface;
+};
+
+let restaurantsTid;
+
+const renderToSurface = content => {
+  // locate the renderer
+  const {renderer} = renderSurface;
+  // attach an event dispatcher
+  renderer.dispatch = (pid, eventlet) => {
+    // `send` and `arcTid` are module variables, only one arc atm
+    send({message: 'event', tid: restaurantsTid, pid, eventlet});
+  };
+  // send message to renderer
+  renderer.render(content);
+};
+
+// dynamic Arc
+
+const spawnRestaurants = async () => {
+  await waitForRenderSurface();
+  // bootstrap: spawn an arc using [recipe]
+  restaurantsTid = send({message: 'spawn', modality: 'bus', recipe: 'Restaurants'});
+  send({tid: restaurantsTid, message: 'recipe', modality: 'bus', recipe: 'MakeReservations'});
+};
+
+// one-off/mvp Toast impl for demonstration
+
+let toasts = [];
+
+const dom = (tag, container, props) => {
+  return container.appendChild(Object.assign(document.createElement(tag), props));
+};
+
+const toastContainer = dom('div', document.body, {style: 'position: fixed; bottom: 0; right: 0; width: 300px;'});
+
+const addToast = msg => {
+  if (!toasts.some(toast => toast.msg === msg)) {
+    const toast = {
+      msg
+    };
+    // never more than 3
+    toasts = toasts.slice(0, 2);
+    toasts.push(toast);
+    renderToasts();
+  }
+};
+
+const renderToasts = () => {
+  const html = [];
+  toastContainer.innerText = '';
+  toasts.forEach((toast, i) => {
+    toast = dom('toast', toastContainer, {
+      innerHTML: toast.msg,
+      style: 'display: block; opacity: 1; margin: 32px; background: lightgreen; padding: 16px; transition: all 200ms ease-in;',
+      onclick: () => {
+        toasts.splice(i, 1);
+        toast.style.opacity = 0;
+        if (!restaurantsTid) {
+          spawnRestaurants();
+        }
+      }
+    });
+  });
 };

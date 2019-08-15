@@ -9,7 +9,7 @@
     box-sizing: border-box;
     display: flex;
     flex-direction: column;
-    border: 2px solid lightblue;
+    border: 8px solid lightblue;
     font-family: sans-serif;
   }
   [container] {
@@ -45,20 +45,35 @@
   <span big>Remote Shell</span>
   <span>
     Remote Shell owns the other two processes and connects things together.
-    Remote Shell gets things started by sending commands to the Arcs Process.
-    Remote Shell forwards rendering commands to the Rendering Surface which actually composes DOM.
+    Remote Shell gets things started by sending commands to the Pipes Shell.
+    Remote Shell forwards rendering commands to the Rendering Surface which composes actual DOM.
   </span>
 
   <div orange row container>
-    <span big>Arcs (Runtime) Process</span>
-    <span>Runtime process is where the runtime code lives and the Arcs work takes place. It needs commands to do anything.</span>
-    <iframe style="height: 32px;" id="arcs" src="../pipes-shell/web/index.html?log"></iframe>
+    <span big>Pipes Shell</span>
+    <span>
+      Pipes Shell is spawned in it's own Window, equivalent to spinning up a WebView or Node process.
+      It doesn't generally render anything, although we could render diagnostic information there.
+    </span>
+    <span>Pipes Shell is where the runtime code lives. It needs commands to do anything.</span>
+    <iframe style="margin: 8px; height: 32px; border: 1px dotted magenta;" id="arcs" src="../pipes-shell/web/index.html?log"></iframe>
   </div>
 
-  <div purple flex row container>
+  <div purple row container>
     <span big>Rendering Surface</span>
-    <iframe flex id="surface" src="./surface.html?log"></iframe>
+    <span>
+      This Rendering Surface is spawned in it's own Window, equivalent to spinning up a WebView or Node process.
+      There could be N of these.
+    </span>
+    <!-- <iframe flex id="surface" src="./surface.html?log"></iframe> -->
   </div>
+  <span big>Demo</span>
+  <span>
+    Remote Shell starts by spinning up an Arc with Notification recipe.
+    The Notification recipe renders a slot with <b>notification modality</b> (which is implemented
+    in Remote Shell via a simple Toast api). The notification should popup in the lower-right corner.
+    Click the notification to spin up a Restaurants Arc with it's own rendering surface.
+  </span>
 </div>
 
 <script type="module" src="index.js"></script>

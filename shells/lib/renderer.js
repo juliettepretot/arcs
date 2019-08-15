@@ -150,7 +150,6 @@ export const SlotObserver = class {
 };
 
 export const attachRenderer = (composer, containers) => {
-  //warn('attached renderer to a composer');
   return composer.slotObserver = new SlotObserver(composer.root);
 };
 
