@@ -66,14 +66,14 @@ recipe MakeReservations
     annotation = event
     hostedParticle = ReservationMultiAnnotation
   // event editor (+scheduler) on restaurant detail
-  //DetailReservationForm
-  //   restaurant = restaurant
-  //   event = event
-  //   consume detailAction
-  //     provide annotation as detailAnnotation
-  //ReservationAnnotation
-  //  //list = [sourced by Coalescer]
-  //  restaurant = restaurant
-  //  event = event
-  //  descriptions = annotationDescriptions
-  //  consume annotation as detailAnnotation
+  DetailReservationForm
+    restaurant = restaurant
+    event = event
+    consume detailAction
+      provide annotation as detailAnnotation
+  ReservationAnnotation
+    //list = [sourced by Coalescer]
+    restaurant = restaurant
+    event = event
+    descriptions = annotationDescriptions
+    consume annotation as detailAnnotation

@@ -126,8 +126,17 @@ defineParticle(({UiParticle, html}) => {
         timePicker: {
           $template: 'time-picker',
           models: [timePicker]
-        }
+        },
+        partySize,
+        date
       };
+    }
+    renderModel(model) {
+      super.renderModel({
+        modality: 'notification',
+        text: `Event for party of ${model.partySize} at ${model.date.toLocaleString()}`
+      });
+      super.renderModel(model);
     }
     initializeEvent() {
       /* Default time selection:
@@ -191,8 +200,9 @@ defineParticle(({UiParticle, html}) => {
       this.storeNewEvent(newEvent);
     }
     storeNewEvent(newEvent) {
-      const event = this.handles.get('event');
-      event.set(new event.entityClass(newEvent));
+      this.set('event', newEvent);
+      //const event = this.handles.get('event');
+      //event.set(new event.entityClass(newEvent));
     }
   };
 
