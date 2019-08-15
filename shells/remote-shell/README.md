@@ -21,7 +21,6 @@ DOM composition.
 In this version of the application, the following occurs:
 
 - Remote Shell spawns the Pipes Shell and the Rendering Surface.
-- When Pipes Shell declares readiness, Remote Shell asks it to spawn
-an Arc with the 'Login' recipe.
+- When Pipes Shell declares readiness, Remote Shell asks it to spawn an Arc.
 - Rendering packages are sent from Pipes Shell to Remote Shell, and then
 to the Rendering Surface, where actual DOM is created.
