@@ -217,6 +217,8 @@ export class UiSlotComposer {
 
   // TODO(sjmiles): experimental slotObserver stuff below here
 
+  // TODO(sjmiles): maybe better implemented as a slot dispose (arc dispose?) notification to
+  // let client code clean up (so `slotObserver` details [like dispose()] can be hidden here)
   disposeObserver() {
     const observer = this['slotObserver'];
     if (observer) {

@@ -12,6 +12,11 @@ import {Const} from '../../../configuration/constants.js';
 import {SyntheticStores} from '../../runtime/synthetic-stores.js';
 import {StoreObserver} from './store-observer.js';
 import {ArcHandleListener, ArcMetaListener, FriendArcMetaListener, ProfileListener, ShareListener} from './context-listeners.js';
+import {logsFactory} from '../../../../build/runtime/log-factory.js';
+
+//const {log} = logsFactory('user-context', 'brown');
+// TODO(sjmiles): we _can_ do this, but should we?
+const console = logsFactory('user-context', 'brown');
 
 const ArcMetaContext = (context, listener) => new ArcHandleListener(new ArcMetaListener(context, listener));
 const ShareContext = (context, listener)  => new ArcHandleListener(new ShareListener(context, listener));
@@ -45,9 +50,9 @@ export class UserContext {
       await this.observer.ready;
       // wait for StoreObserver to become (heuristically) idle
       await StoreObserver.idle;
-      console.warn('UserContext considered ready');
+      console.log('UserContext considered ready');
     } else {
-      console.warn('UserContext: no launcher arc, will look again in 5s');
+      console.log('UserContext: no launcher arc, will look again in 5s');
       setTimeout(() => this.connect(context, storageKey), 5000);
       // we are about the resolve the context on the next line, even tho
       // we have no context ... this is for the `new user` case, where

@@ -22,17 +22,10 @@ export interface UiParticleConfig {
 export type RenderModel = object;
 
 /**
- * Particle that interoperates with DOM.
+ * Particle that can render and process events.
  */
 export class UiSimpleParticle extends Particle {
   private currentSlotName: string | undefined;
-
-  /**
-   * Override to return a String defining primary markup.
-   */
-  get template(): string {
-    return '';
-  }
 
   /**
    * Override if necessary, to modify superclass config.
@@ -48,20 +41,27 @@ export class UiSimpleParticle extends Particle {
   }
 
   /**
+   * Override to return a template.
+   */
+  get template(): string {
+    return '';
+  }
+
+  /**
    * Override to return a String defining primary markup for the given slot name.
    */
-  getTemplate(slotName: string): string {
-    // TODO: only supports a single template for now. add multiple templates support.
-    return this.template;
-  }
+  // getTemplate(slotName: string): string {
+  //   // TODO: only supports a single template for now. add multiple templates support.
+  //   return this.template;
+  // }
 
   /**
    * Override to return a String defining the name of the template for the given slot name.
    */
-  getTemplateName(slotName: string): string {
-    // TODO: only supports a single template for now. add multiple templates support.
-    return `default`;
-  }
+  // getTemplateName(slotName: string): string {
+  //   // TODO: only supports a single template for now. add multiple templates support.
+  //   return `default`;
+  // }
 
   /**
    * Override to return false if the Particle isn't ready to `render()`
@@ -71,16 +71,19 @@ export class UiSimpleParticle extends Particle {
   }
 
   renderOutput(...args): void {
-    //if (this.template) {
-      const renderModel = this.render(...args);
-      if (renderModel) {
-        //console.warn(renderModel);
-        this.output({
-          template: this.template,
-          model: renderModel
-        });
-      }
-    //}
+    const renderModel = this.render(...args);
+    if (renderModel) {
+      this.renderModel(renderModel);
+    }
+  }
+
+  // This is the default output 'packet', other implementations (modalities) could
+  // output other things, or choose different output packets based on hints from 'model'
+  renderModel(model) {
+    this.output({
+      template: this.template,
+      model
+    });
   }
 
   /**
@@ -94,13 +97,13 @@ export class UiSimpleParticle extends Particle {
     return [];
   }
 
-  forceRenderTemplate(slotName: string = ''): void {
-    this.slotProxiesByName.forEach((slot: SlotProxy, name: string) => {
-      if (!slotName || (name === slotName)) {
-        slot.requestedContentTypes.add('template');
-      }
-    });
-  }
+  // forceRenderTemplate(slotName: string = ''): void {
+  //   this.slotProxiesByName.forEach((slot: SlotProxy, name: string) => {
+  //     if (!slotName || (name === slotName)) {
+  //       slot.requestedContentTypes.add('template');
+  //     }
+  //   });
+  // }
 
   fireEvent(slotName: string, {handler, data}): void {
     if (this[handler]) {
@@ -112,7 +115,6 @@ export class UiSimpleParticle extends Particle {
     if (typeof pattern === 'string') {
       return super.setParticleDescription(pattern);
     }
-
     if (pattern.template && pattern.model) {
       await super.setDescriptionPattern('_template_', pattern.template);
       await super.setDescriptionPattern('_model_', JSON.stringify(pattern.model));
