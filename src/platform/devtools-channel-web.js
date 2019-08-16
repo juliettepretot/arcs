@@ -14,7 +14,8 @@ import {AbstractDevtoolsChannel} from '../devtools-connector/abstract-devtools-c
 import {DevtoolsBroker} from '../../devtools/shared/devtools-broker.js';
 
 // configures a firebase instance
-import {database} from '../../shells/lib/database/firebase.js';
+// TODO(sjmiles): violates source boundaries (reaching into shells)
+import {database} from '../../shells/lib/firebase.js';
 
 export class DevtoolsChannel extends AbstractDevtoolsChannel {
   constructor() {

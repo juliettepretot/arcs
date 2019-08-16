@@ -15,7 +15,7 @@ import {ModalityHandler} from './modality-handler.js';
 import {Modality} from './modality.js';
 import {Particle} from './recipe/particle.js';
 import {SlotConsumer} from './slot-consumer.js';
-import {HostedSlotContext, ProvidedSlotContext, SlotContext} from './slot-context.js';
+import {ProvidedSlotContext, SlotContext} from './slot-context.js';
 import {logsFactory} from './log-factory.js';
 
 const {log, warn} = logsFactory('UiSlotComposer', 'brown');
@@ -250,7 +250,7 @@ export class UiSlotComposer {
       });
       //
       //console.log(`RenderEx:delegateOutput for %c[${particle.spec.name}]::[${particle.id}]`, 'color: darkgreen; font-weight: bold;');
-      observer.observe(content);
+      observer.observe(content, this["arc"]);
     }
   }
 

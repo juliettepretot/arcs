@@ -9,7 +9,7 @@
  */
 
 import {generateId} from '../../../../modalities/dom/components/generate-id.js';
-import {Utils} from '../../../lib/runtime/utils.js';
+import {Utils} from '../../../lib/utils.js';
 import {marshalOutput} from '../lib/utils.js';
 import {portIndustry} from '../pec-port.js';
 import {logsFactory} from '../../../../build/runtime/log-factory.js';

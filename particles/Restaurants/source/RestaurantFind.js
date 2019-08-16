@@ -36,9 +36,9 @@ defineParticle(({UiParticle}) => {
       this.receivePlaces(places);
     }
     async receivePlaces(places) {
-      let results = places.results || [];
-      // trim
-      results = results.slice(0, 5);
+      const results = (places.results || []);
+      // cap # of results
+      //const results = (places.results || []).slice(0, 5);
       const restaurants = results.map(p => this.placeToEntity(p));
       await this.clearHandle('restaurants');
       this.appendRawDataToHandle('restaurants', restaurants);

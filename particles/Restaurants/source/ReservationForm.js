@@ -61,7 +61,6 @@ defineParticle(({UiParticle, html}) => {
     vertical-align: top;
     border: 0;
     background: transparent;
-    font-family: 'Google Sans';
     font-size: 16px;
     line-height: 24px;
   }

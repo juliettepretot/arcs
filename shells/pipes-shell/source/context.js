@@ -8,7 +8,7 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {Utils} from '../../lib/runtime/utils.js';
+import {Utils} from '../../lib/utils.js';
 
 const manifest = `
 import 'https://$particles/Notification/Notification.arcs'

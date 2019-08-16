@@ -30,33 +30,63 @@ export const SlotObserver = class {
     this.render(slot);
   }
   render(slot) {
-    //log(`changed`, slot.id, slot.rawData.id);
-    this.pendingSlots.unshift(slot);
+    // capture the slot, even if we can't process it yet, only keep the latest slot info per outputId
+    const i = this.pendingSlots.findIndex(s => s.outputSlotId === slot.outputSlotId);
+    if (i >= 0) {
+      this.pendingSlots[i] = slot;
+    } else {
+      this.pendingSlots.unshift(slot);
+    }
+    // begin processing slots, unless we are already
     this.processSlots();
   }
   async processSlots() {
+    // `renderSlots` is async, so prevent re-entrancy
     if (!this.processSlots.working) {
       this.processSlots.working = true;
       try {
-        let slots = [];
-        while (this.pendingSlots.length) {
-          // combine left-over slots with slots that came in while awaiting
-          slots = slots.concat(this.pendingSlots);
-          // make way for new slots
-          this.pendingSlots = [];
-          //log('processing slots...', slots.length);
-          // try to render each slot
-          return slots.filter(slot => !this.renderSlot(slot));
-        }
-        // return left-over slots to pending
-        this.pendingSlots = slots;
+        await this.renderSlots();
       } finally {
         this.processSlots.working = false;
-        if (this.pendingSlots.length) {
-          log('done processing slots, left over slots:', this.pendingSlots.length);
-        }
+        log('pendingSlots:', this.pendingSlots.length);
+        //if (!this.pendingSlots.length) {
+        //  log('ALL slots rendered');
+        //}
+        //if (this.pendingSlots.length) {
+        //  log('SLOTS remaining after one pass:', this.pendingSlots.length);
+        //}
       }
     }
+  }
+  async renderSlots() {
+    // track slots that didn't render yet
+    let skips;
+    // if we rendered anything, we should revisit skipped slots
+    let haveRendered;
+    do {
+      // fresh pass
+      skips = [];
+      haveRendered = false;
+      // loop is asynchronous, more pendingSlots could have arrived while awaiting
+      while (this.pendingSlots.length) {
+        // process these slots
+        const slots = this.pendingSlots;
+        // allow new slots to enter pending state while we are rendering
+        this.pendingSlots = [];
+        // try to render each slot, accumulate skipped slots
+        for (const slot of slots) {
+          if (await this.renderSlot(slot)) {
+            haveRendered = true;
+          } else {
+            skips.push(slot);
+          }
+        }
+      }
+      // return left-over slots to pending
+      this.pendingSlots = skips;
+    // perform another pass if we rendered something and there are still pending slots
+    } while (haveRendered && skips.length);
+    // pendingSlots will not be empty if none of them will render yet
   }
   async renderSlot(slot) {
     let success;
@@ -68,14 +98,15 @@ export const SlotObserver = class {
     } else {
       success = await this.renderXenSlot(slot);
     }
-    //log(`[${slot.particle.name}]: ${success ? `rendered` : `FAILED render`}`);
-    if (!success) {
-      groupCollapsed(`[${slot.particle.name}]: FAILED render`);
-      log(slot);
-      console.groupEnd();
-    } else {
-      log(`[${slot.particle.name}]: rendered`);
-    }
+    log(`render [${slot.particle.name}]: ${success ? `ok` : `skipped`}`);
+    //if (!success) {
+      //groupCollapsed(`[${slot.particle.name}]: FAILED render`);
+      //log(slot);
+      //console.groupEnd();
+    //}
+    // else {
+    //   log(`[${slot.particle.name}]: rendered`);
+    // }
     return success;
   }
   async renderDataSlot(slot) {
@@ -145,7 +176,7 @@ export const SlotObserver = class {
     }
   }
   dispatch(pid, eventlet) {
-    log(`sending event to target [${eventlet.name}]: `, eventlet);
+    log(`caught event [${eventlet.name}] for target [${pid}], dispatch not implemented`);
   }
 };
 

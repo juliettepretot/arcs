@@ -22,10 +22,10 @@ import '../../modalities/dom/components/elements/dom-repeater.js';
 import '../../modalities/dom/components/elements/youtube-viewer.js';
 
 // requires app-level firebase configuration
-import '../lib/database/firebase-upload.js';
+import '../lib/firebase-upload.js';
 
 // services for particle use
-// TODO(sjmiles): TensorFlowJs (tfjs, also part of ml5) uses `new Function()` which requires `unsafe-eval` csp
-import '../services/textclassifier-service.js';
-import '../lib/services/tf.js';
+import '../lib/services/textclassifier-service.js';
 import '../../build/services/random-service.js';
+// TODO(sjmiles): TensorFlowJs (tfjs, also part of ml5) uses `new Function()` which requires `unsafe-eval` csp
+import '../lib/services/tf.js';

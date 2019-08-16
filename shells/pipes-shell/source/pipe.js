@@ -8,7 +8,7 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {Utils} from '../../lib/runtime/utils.js';
+import {Utils} from '../../lib/utils.js';
 import {requireContext} from './context.js';
 import {requireIngestionArc} from './ingestion-arc.js';
 import {dispatcher} from './dispatcher.js';
@@ -52,7 +52,9 @@ const populateDispatcher = (dispatcher, composerFactory, storage, context) => {
       return await pec(msg, tid, bus);
     },
     spawn: async (msg, tid, bus) => {
-      return await spawn(msg, tid, bus, composerFactory, storage, context);
+      const arc = await spawn(msg, tid, bus, composerFactory, storage, context);
+      arc.tid = tid;
+      return arc;
     },
     recipe: async (msg, tid, bus) => {
       const arc = await bus.getAsyncValue(msg.tid);
@@ -60,10 +62,24 @@ const populateDispatcher = (dispatcher, composerFactory, storage, context) => {
         return await instantiateRecipeByName(arc, msg.recipe);
       }
     },
+    // event: async (msg, tid, bus) => {
+    //   const arc = await bus.getAsyncValue(msg.tid);
+    //   if (arc && arc.pec && arc.pec.slotComposer) {
+    //     arc.pec.slotComposer.slotObserver.fire(arc, msg.pid, msg.eventlet);
+    //   }
+    // }
     event: async (msg, tid, bus) => {
       const arc = await bus.getAsyncValue(msg.tid);
-      if (arc && arc.pec && arc.pec.slotComposer) {
-        arc.pec.slotComposer.slotObserver.fire(arc, msg.pid, msg.eventlet);
+      if (arc) {
+        const particle = arc.activeRecipe.particles.find(
+          particle => String(particle.id) === msg.pid
+        );
+        if (particle) {
+          log('firing PEC event for', particle.name);
+          // TODO(sjmiles): we need `arc` and `particle` here even though
+          // the two are bound together, figure out how to simplify
+          arc.pec.sendEvent(particle, /*slotName*/'', msg.eventlet);
+        }
       }
     }
   });
@@ -72,7 +88,10 @@ const populateDispatcher = (dispatcher, composerFactory, storage, context) => {
 
 const composerFactory = (modality, bus, tid) => {
   switch (modality) {
-    case 'bus': {
+    case 'ram': {
+      return new RamSlotComposer();
+    }
+    default: {
       const composer = new RamSlotComposer({
         top: 'top',
         root: 'root',
@@ -86,35 +105,21 @@ const composerFactory = (modality, bus, tid) => {
       composer.slotObserver = brokerFactory(bus);
       return composer;
     }
-    default: {
-      return new RamSlotComposer();
-    }
   }
 };
 
+// `slot-composer` delegates ui work to a `ui-broker`
 const brokerFactory = bus => {
   return {
-    observe: output => {
+    observe: async (output, arc) => {
       console.log('UiBroker received', output);
       const content = output;
       content.particle = {
         name: output.particle.name,
         id: String(output.particle.id)
       };
-      bus.send({message: 'slot', content: output});
-    },
-    fire: (arc, pid, eventlet) => {
-      if (arc) {
-        const particle = arc.activeRecipe.particles.find(
-          particle => String(particle.id) === pid
-        );
-        if (particle) {
-          log('firing PEC event for', particle.name);
-          // TODO(sjmiles): we need `arc` and `particle` here even though
-          // the two are bound together, figure out how to simplify
-          arc.pec.sendEvent(particle, /*slotName*/'', eventlet);
-        }
-      }
+      const tid = await bus.recoverTransactionId(arc);
+      bus.send({message: 'slot', tid, content: output});
     },
     dispose: () => null
   };

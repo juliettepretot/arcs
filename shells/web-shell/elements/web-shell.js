@@ -12,15 +12,12 @@ import {linkJack} from '../../../modalities/dom/components/link-jack.js';
 import {generateId} from '../../../modalities/dom/components/generate-id.js';
 import {Const} from '../../configuration/constants.js';
 import {Xen} from '../../lib/components/xen.js';
-import {Utils} from '../../lib/runtime/utils.js';
-import '../../lib/elements/launcher-arc.js';
+import {Utils} from '../../lib/utils.js';
+import '../../lib/elements/arc-element.js';
 import './web-config.js';
-import './web-arc.js';
 import './web-context.js';
-import './web-launcher.js';
 import './web-planner.js';
 import './ui/web-shell-ui.js';
-//import './pipes/device-client-pipe.js';
 
 const manifests = {
   context: `
@@ -48,9 +45,6 @@ const template = Xen.Template.html`
       display: none;
     }
     [suggestions] {
-      background-color: silver;
-    }
-    [slotid=suggestions] {
       background-color: white;
     }
   </style>
@@ -63,24 +57,16 @@ const template = Xen.Template.html`
     <!-- web planner -->
     <web-planner config="{{config}}" arc="{{plannerArc}}" search="{{search}}" on-metaplans="onState" on-suggestions="onSuggestions"></web-planner>
     <!-- background arcs -->
-    <web-arc id="nullArc" hidden storage="{{storage}}" config="{{nullConfig}}" context="{{context}}" on-arc="onNullArc"></web-arc>
-    <!-- <web-arc id="folksArc" hidden storage="{{storage}}" config="{{folksConfig}}" context="{{context}}" on-arc="onFolksArc"></web-arc> -->
-    <!-- <web-arc id="pipesArc" hidden storage="{{storage}}" config="{{pipesConfig}}" context="{{context}}" on-arc="onPipesArc"></web-arc> -->
-    <!-- data pipes -->
-    <!-- <device-client-pipe context="{{context}}" storage="{{storage}}" arc="{{arc}}" pipearc="{{pipesArc}}" suggestions="{{suggestions}}" on-search="onState" on-client-arc="onPipeClientArc" on-suggestion="onChooseSuggestion" on-spawn="onRequestPipeArc" on-reset="onReset"></device-client-pipe> -->
+    <arc-element id="nullArc" hidden storage="{{storage}}" config="{{nullConfig}}" context="{{context}}" on-arc="onNullArc"></arc-element>
   </div>
   <!-- ui -->
   <web-shell-ui arc="{{arc}}" launcherarc="{{launcherArc}}" context="{{context}}" nullarc="{{nullArc}}" pipesarc="{{pipesArc}}" search="{{search}}" on-search="onState" showhint="{{showHint}}">
     <!-- launcher -->
     <arc-element id="launcher" hidden="{{hideLauncher}}" storage="{{storage}}" context="{{context}}" config="{{launcherConfig}}" on-arc="onLauncherArc"></arc-element>
-    <!-- <web-arc id="launcher" hidden="{{hideLauncher}}" storage="{{storage}}" context="{{context}}" config="{{launcherConfig}}" on-arc="onLauncherArc"></web-arc> -->
-    <!-- <web-launcher hidden="{{hideLauncher}}" storage="{{storage}}" context="{{context}}" info="{{info}}"></web-launcher> -->
     <!-- user arc -->
-    <web-arc id="arc" hidden="{{hideArc}}" storage="{{storage}}" context="{{context}}" config="{{arcConfig}}" manifest="{{manifest}}" plan="{{plan}}" on-arc="onState"></web-arc>
+    <arc-element id="arc" hidden="{{hideArc}}" storage="{{storage}}" context="{{context}}" config="{{arcConfig}}" manifest="{{manifest}}" plan="{{plan}}" on-arc="onState"></arc-element>
     <!-- suggestions -->
-    <div slot="suggestions" suggestions>
-      <div slotid="suggestions" on-plan-choose="onChooseSuggestion"></div>
-    </div>
+    <div slot="suggestions" suggestions on-plan-choose="onChooseSuggestion"></div>
   </web-shell-ui>
 `;
 
@@ -140,10 +126,6 @@ export class WebShell extends Xen.Debug(Xen.Async, log) {
     if (!state.nullConfig && state.context && state.store) {
       this.configureNullArc();
     }
-    // spin up pipesArc
-    // if (!state.pipesConfig && state.context) {
-    //   this.configurePipesArc();
-    // }
     // consume a suggestion
     if (state.suggestion && state.context) {
       this.applySuggestion(state.suggestion);
@@ -162,13 +144,7 @@ export class WebShell extends Xen.Debug(Xen.Async, log) {
       }
     }
     if (state.suggestions !== lastState.suggestions) {
-      const container = this.host.querySelector('[slotid="suggestions"]');
-      log('suggestions', state.suggestions, container);
-      if (container) {
-        container.innerText = '';
-        state.suggestions.forEach(suggestion =>
-          container.appendChild(document.createElement('suggestion-element')).plan = suggestion);
-      }
+      this.renderSuggestions(state.suggestions);
     }
     this.state = {hideLauncher: Boolean(state.arckey)};
   }
@@ -180,6 +156,17 @@ export class WebShell extends Xen.Debug(Xen.Async, log) {
       hideLauncher: showLogin ? true : hideLauncher,
     };
     return [props, state, renderModel];
+  }
+  renderSuggestions(suggestions) {
+    const container = this.host.querySelector('[suggestions]');
+    log('suggestions', suggestions, container);
+    if (container) {
+      container.innerText = '';
+      suggestions.forEach(suggestion =>
+        container.appendChild(document.createElement('suggestion-element'))
+        .plan = suggestion
+      );
+    }
   }
   async configureEnv(root) {
     // capture anchor-clicks for SPA behavior
@@ -333,7 +320,7 @@ export class WebShell extends Xen.Debug(Xen.Async, log) {
     if (showHint) {
       // latch showHint
       // TODO(sjmiles): needs debouncing
-      // TODO(sjmiles): logic in handler is a bad practice
+      // TODO(sjmiles): logic in event handler is a bad practice
       setTimeout(() => this.state = {showHint: false}, 0);
     }
   }
@@ -344,34 +331,6 @@ export class WebShell extends Xen.Debug(Xen.Async, log) {
   onReset() {
     this.openLauncher();
   }
-  //
-  // pipes
-  //
-  // configurePipesArc() {
-  //   const pipesConfig = this.configureBgArc('pipes');
-  //   pipesConfig.manifest = manifests.pipes;
-  //   this.state = {
-  //     pipesConfig
-  //   };
-  // }
-  // onPipesArc(e, pipesArc) {
-  //   this.state = {pipesArc};
-  // }
-  // onRequestPipeArc(e, {id, manifest, description}) {
-  //   const storage = this.state.config.storage;
-  //   this.configureArc({storage, id, manifest, description});
-  // }
-  // onPipeClientArc(e, arc) {
-  //   // TODO(sjmiles): `arc.key` is ad-hoc data from device-client-pipe
-  //   const key = arc.key;
-  //   this.recordArcMeta({
-  //     key: key,
-  //     href: `?arc=${key}`,
-  //     description: `Piped Data Arc`,
-  //     color: 'purple',
-  //     touched: Date.now()
-  //   });
-  // }
 }
 
 customElements.define('web-shell', WebShell);

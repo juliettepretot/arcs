@@ -31,9 +31,9 @@ const template = Xen.Template.html`
       pointer-events: none;
     }
   </style>
-  <div slotid="top" id="topslotid-root"></div>
+  <div slotid="top" id="rootslotid-top"></div>
   <div slotid="root" id="rootslotid-root"></div>
-  <div slotid="modal" id="modalslotid-root"></div>
+  <div slotid="modal" id="rootslotid-modal"></div>
 `;
 
 const ArcElementMixin = Base => class extends Base {
