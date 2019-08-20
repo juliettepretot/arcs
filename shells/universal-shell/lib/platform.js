@@ -9,7 +9,7 @@
  */
 
 const pipeShellHref = new URL(`../pipes-shell/web/index.html?log`, location.href).href;
-const renderSurfaceHref = new URL('./lib/surface.html?log', location.href).href;
+const renderSurfaceHref = new URL('../pipes-shell/surface/surface.html?log', location.href).href;
 
 export const connectToPlatform = async Application => {
   // spin up runtime
@@ -95,7 +95,7 @@ export const waitForRenderSurface = async () => {
   if (!renderSurface) {
     renderSurface = createRenderSurface();
     // TODO(sjmiles): could wait for explicit signal, but this is MVP
-    await new Promise(resolve => setTimeout(resolve, 300));
+    await new Promise(resolve => setTimeout(resolve, 1000));
   }
   return renderSurface;
 };

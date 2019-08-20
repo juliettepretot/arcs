@@ -18,7 +18,7 @@ const Application = {
   // handle packets that were not otherwised consumed
   receive(packet) {
     // if we get a slot-render request for 'notification' modality, make a toast for it
-    if (packet.messageType === 'slot' && packet.modality === 'notification') {
+    if (packet.content.model.modality === 'notification') {
       addToast(packet.content.model.text);
     }
   },
