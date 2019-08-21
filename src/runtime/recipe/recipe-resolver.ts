@@ -224,6 +224,9 @@ export class RecipeResolver {
       }
       return null;
     }
+    if (!result[0].valid) {
+      console.warn('result[0] is not valid');
+    }
     return result[0].result;
   }
 }

@@ -10,22 +10,23 @@
 
 'use strict';
 
-defineParticle(({DomParticle, html, log}) => {
-  return class extends DomParticle {
-    get template() {
-      return html`<span></span>`;
-    }
-    update({recentEntities}, state) {
-      if (recentEntities) {
-        const json = this.query(recentEntities);
-        this.updateSingleton('suggestion', {json});
-      }
+/* global defineParticle */
+
+defineParticle(({UiParticle, html, log}) => {
+  return class extends UiParticle {
+    render({recentEntities}) {
+      const person = (recentEntities && this.query(recentEntities)) || {};
+      const data = JSON.parse(person.jsonData);
+      return {
+        modality: 'notification',
+        text: `[autofill] ${(data && data.name) || '(no name)'}`
+      };
     }
     query(entities) {
-      const people = entities.filter(entity => entity.type === 'people');
+      const people = entities.filter(entity => entity.type === 'person');
       const sorted = people.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
       const result = sorted[0] || Object;
-      return JSON.stringify(result);
+      return result;
     }
   };
 });

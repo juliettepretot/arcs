@@ -19,3 +19,4 @@ recipe PeopleAutofill &autofill
     recentEntities = recentEntities
     suggestion = suggestion
   description `suggest person`
+

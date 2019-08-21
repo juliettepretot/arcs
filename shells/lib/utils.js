@@ -52,7 +52,12 @@ const resolve = async (arc, recipe) =>{
     let plan = recipe;
     if (!plan.isResolved()) {
       const resolver = new RecipeResolver(arc);
-      plan = await resolver.resolve(recipe);
+      //const errors = new Map();
+      plan = await resolver.resolve(recipe); //, {errors});
+      //console.warn(errors);
+      //if (plan) {
+      //  normalize(plan);
+      //}
       if (!plan || !plan.isResolved()) {
         warn('failed to resolve:\n', (plan || recipe).toString({showUnresolved: true}));
         //log(arc.context, arc, arc.context.storeTags);
@@ -64,10 +69,12 @@ const resolve = async (arc, recipe) =>{
 };
 
 const normalize = async (recipe) =>{
-  if (isNormalized(recipe) || recipe.normalize()) {
+  const errors = new Map();
+  if (isNormalized(recipe) || recipe.normalize({errors})) {
     return true;
   }
-  warn('failed to normalize:\n', recipe.toString());
+  warn('failed to normalize:\n', errors, recipe.toString());
+  //warn('failed to normalize:\n', recipe.toString());
   return false;
 };
 

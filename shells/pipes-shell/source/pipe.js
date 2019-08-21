@@ -15,6 +15,7 @@ import {dispatcher} from './dispatcher.js';
 import {Bus} from './bus.js';
 import {pec} from './verbs/pec.js';
 import {spawn, instantiateRecipeByName} from './verbs/spawn.js';
+import {ingest} from './verbs/ingest.js';
 import {RamSlotComposer} from '../../lib/components/ram-slot-composer.js';
 import {logsFactory} from '../../../build/runtime/log-factory.js';
 
@@ -51,6 +52,9 @@ const populateDispatcher = (dispatcher, composerFactory, storage, context) => {
     pec: async (msg, tid, bus) => {
       return await pec(msg, tid, bus);
     },
+    ingest: async (msg, tid, bus) => {
+      return await ingest(msg.entity, tid, bus);
+    },
     spawn: async (msg, tid, bus) => {
       const arc = await spawn(msg, tid, bus, composerFactory, storage, context);
       arc.tid = tid;
@@ -62,15 +66,11 @@ const populateDispatcher = (dispatcher, composerFactory, storage, context) => {
         return await instantiateRecipeByName(arc, msg.recipe);
       }
     },
-    // event: async (msg, tid, bus) => {
-    //   const arc = await bus.getAsyncValue(msg.tid);
-    //   if (arc && arc.pec && arc.pec.slotComposer) {
-    //     arc.pec.slotComposer.slotObserver.fire(arc, msg.pid, msg.eventlet);
-    //   }
-    // }
     event: async (msg, tid, bus) => {
+      // find the arc from the tid in the message (not the tid for this request)
       const arc = await bus.getAsyncValue(msg.tid);
       if (arc) {
+        // find the particle from the pid in the message
         const particle = arc.activeRecipe.particles.find(
           particle => String(particle.id) === msg.pid
         );

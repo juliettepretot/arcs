@@ -64,7 +64,12 @@ const observeOutput = async (tid, bus, arc) => {
   for (let i=0; i<20; i++) {
     const entity = await marshalOutput(arc);
     if (entity) {
-      const data = JSON.parse(entity.rawData.json);
+      let data = {};
+      try {
+       data = JSON.parse(entity.rawData.json);
+      } catch (x) {
+        //
+      }
       bus.send({message: 'data', tid, data});
     }
   }

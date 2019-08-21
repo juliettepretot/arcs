@@ -55,7 +55,9 @@ export const connectToPlatform = async Application => {
       }
     }
   };
-  const renderToSurface = packet => {
+  const renderToSurface = async packet => {
+    // force a surface
+    await waitForRenderSurface();
     // locate the renderer
     const {renderer} = renderSurface;
     // extract packet data
@@ -134,7 +136,7 @@ const renderToasts = () => {
   toasts.forEach((toast, i) => {
     toast = dom('toast', toastContainer, {
       innerHTML: toast.msg,
-      style: 'display: block; opacity: 1; margin: 32px; background: lightgreen; padding: 16px; transition: all 200ms ease-in;',
+      style: 'display: block; cursor: pointer; opacity: 1; margin: 32px; background: lightgreen; padding: 16px; transition: all 200ms ease-in;',
       onclick: () => {
         toasts.splice(i, 1);
         toast.style.opacity = 0;
