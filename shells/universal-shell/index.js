@@ -13,7 +13,7 @@ import {connectToPlatform, waitForRenderSurface, addToast} from './lib/platform.
 const Application = {
   ready() {
     // testing ingestion
-    this.send({message: 'ingest', entity: {type: 'person', jsonData: JSON.stringify({name: 'John Hancock'})}});
+    this.send({message: 'ingest', entity: {type: 'person', jsonData: `{"name": "John Hancock"}`}});
     setTimeout(() => {
       this.ingestTid = this.send({message: 'spawn', recipe: 'PersonAutofill'});
     }, 300);
