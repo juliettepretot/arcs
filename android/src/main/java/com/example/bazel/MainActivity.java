@@ -7,44 +7,53 @@ import android.os.Bundle;
 import android.util.Base64;
 import android.util.Log;
 import android.webkit.JavascriptInterface;
+import android.webkit.WebSettings;
 import android.webkit.WebView;
-import android.widget.Button;
-import android.widget.TextView;
 import android.widget.Toast;
+
+import java.util.logging.Logger;
 
 /**
  * Main class for the Bazel Android "Hello, World" app.
  */
 public class MainActivity extends Activity {
+
+  private static final Logger logger = Logger.getLogger(MainActivity.class.getName());
+
+  private WebView webView;
+
   @SuppressLint("SetJavaScriptEnabled")
   @Override
   public void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
-    WebView webView = new WebView(this);
+
+    webView = new WebView(this);
     setContentView(webView);
 
-    webView.getSettings().setJavaScriptEnabled(true);
-    webView.addJavascriptInterface(new WebAppInterface(this), "Android");
+    WebSettings settings = webView.getSettings();
+    settings.setDatabaseEnabled(true);
+    settings.setGeolocationEnabled(true);
+    settings.setJavaScriptEnabled(true);
+    settings.setDomStorageEnabled(true);
+    settings.setSafeBrowsingEnabled(false);
+    settings.setAllowFileAccessFromFileURLs(true);
+    settings.setAllowUniversalAccessFromFileURLs(true);
+    WebView.setWebContentsDebuggingEnabled(true);
+    webView.addJavascriptInterface(this, "Android");
 
-    String unencodedHtml =
-        "<input type=\"button\" value=\"Say hello\" onClick=\"Android.showToast('Hello Android!')\" />";
-    String encodedHtml = Base64.encodeToString(unencodedHtml.getBytes(),
-            Base64.NO_PADDING);
-    webView.loadData(encodedHtml, "text/html", "base64");
+    webView.loadUrl("file:///android_asset/example.html");
   }
 
-  private static class WebAppInterface {
-    Context context;
+  /** Show a toast from the web page */
+  @JavascriptInterface
+  public void showToast(String toast) {
+    Toast.makeText(this, toast, Toast.LENGTH_SHORT).show();
+  }
 
-    /** Instantiate the interface and set the context */
-    WebAppInterface(Context c) {
-      context = c;
-    }
-
-    /** Show a toast from the web page */
-    @JavascriptInterface
-    public void showToast(String toast) {
-      Toast.makeText(context, toast, Toast.LENGTH_SHORT).show();
-    }
+  /** Called when the WebView is ready. */
+  @JavascriptInterface
+  public void onLoad() {
+    logger.info("onLoad called");
+    webView.post(() -> webView.evaluateJavascript("abc(111)", res -> logger.info("Result from JS was: " + res)));
   }
 }
