@@ -41,7 +41,7 @@ public class MainActivity extends Activity {
     WebView.setWebContentsDebuggingEnabled(true);
     webView.addJavascriptInterface(this, "Android");
 
-    webView.loadUrl("file:///android_asset/example.html");
+    webView.loadUrl("file:///android_asset/pipes_shell_dist/index.html?log");
   }
 
   /** Show a toast from the web page */
