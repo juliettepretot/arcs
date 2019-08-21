@@ -1,28 +1,50 @@
 package com.example.bazel;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
+import android.content.Context;
 import android.os.Bundle;
+import android.util.Base64;
 import android.util.Log;
+import android.webkit.JavascriptInterface;
+import android.webkit.WebView;
 import android.widget.Button;
 import android.widget.TextView;
+import android.widget.Toast;
 
 /**
  * Main class for the Bazel Android "Hello, World" app.
  */
 public class MainActivity extends Activity {
+  @SuppressLint("SetJavaScriptEnabled")
   @Override
   public void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
-    Log.v("Bazel", "Hello, Android");
+    WebView webView = new WebView(this);
+    setContentView(webView);
 
-    setContentView(R.layout.activity_main);
+    webView.getSettings().setJavaScriptEnabled(true);
+    webView.addJavascriptInterface(new WebAppInterface(this), "Android");
 
-    Button clickMeButton = findViewById(R.id.clickMeButton);
-    TextView helloBazelTextView = findViewById(R.id.helloBazelTextView);
+    String unencodedHtml =
+        "<input type=\"button\" value=\"Say hello\" onClick=\"Android.showToast('Hello Android!')\" />";
+    String encodedHtml = Base64.encodeToString(unencodedHtml.getBytes(),
+            Base64.NO_PADDING);
+    webView.loadData(encodedHtml, "text/html", "base64");
+  }
 
-    Greeter greeter = new Greeter();
+  private static class WebAppInterface {
+    Context context;
 
-    // Bazel supports Java 8 language features like lambdas!
-    clickMeButton.setOnClickListener(v -> helloBazelTextView.setText(greeter.sayHello()));
+    /** Instantiate the interface and set the context */
+    WebAppInterface(Context c) {
+      context = c;
+    }
+
+    /** Show a toast from the web page */
+    @JavascriptInterface
+    public void showToast(String toast) {
+      Toast.makeText(context, toast, Toast.LENGTH_SHORT).show();
+    }
   }
 }
