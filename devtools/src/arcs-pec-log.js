@@ -234,7 +234,9 @@ class ArcsPecLog extends MessengerMixin(PolymerElement) {
     let icon = null;
     const isCallback = name.endsWith('Callback');
 
+    let hostToPec = null;
     if (name.startsWith('on')) { // Host <- Context.
+      hostToPec = false;
       name = name.substring(2);
       if (msg.pecMsgBody.callback) {
         icon = isCallback ? '↩' : '←';
@@ -242,6 +244,7 @@ class ArcsPecLog extends MessengerMixin(PolymerElement) {
         icon = '⇤';
       }
     } else { // Host -> Context.
+      hostToPec = true;
       if (msg.pecMsgBody.callback) {
         icon = isCallback ? '↪' : '→';
       } else {
@@ -269,6 +272,7 @@ class ArcsPecLog extends MessengerMixin(PolymerElement) {
 
     return {
       icon,
+      hostToPec,
       name,
       pecMsgBody: msg.pecMsgBody,
       explorerData,
@@ -354,8 +358,6 @@ class ArcsPecLog extends MessengerMixin(PolymerElement) {
   }
   
   step() {
-    if (this.rewindIndex >= this.entries.lenght) return;
-    this.rewindIndex++;
     const entry = this.entries[this.rewindIndex];
     this.send({
       messageType: 'replay-step',
@@ -365,6 +367,10 @@ class ArcsPecLog extends MessengerMixin(PolymerElement) {
       },
       arcId: this.arcId
     });
+
+    do {
+      this.rewindIndex++;
+    } while (this.rewindIndex < this.entries.length && !this.entries[this.rewindIndex].hostToPec);
   }
 
   stop() {

@@ -95,7 +95,7 @@ class ReplayExecutionHost extends PECOuterPort {
   }
 
   step(msg: DevtoolsMessage) {
-    console.log('Replay step:', msg.messageBody);
+    console.log(`Sending ${msg.messageBody.name}`, msg.messageBody.body);
 
     void this.send(msg.messageBody.name, msg.messageBody.body); 
 
@@ -107,6 +107,17 @@ class ReplayExecutionHost extends PECOuterPort {
     //this.InnerArcRender(transformationParticle, transformationSlotName, hostedSlotId, content);
     //this.AwaitIdle(this.nextIdentifier++);
     //this.Stop();
+  }
+
+  // Here we receive the incoming message json/
+  async _processMessage(e) {
+    console.log(`Received ${e.data.messageType}:`, e.data.messageBody);
+    // assert(this['before' + e.data.messageType] !== undefined);
+    // const count = this.messageCount++;
+    // if (this.inspector) {
+    //   this.inspector.pecMessage('on' + e.data.messageType, e.data.messageBody, count, e.data.stack);
+    // }
+    // this['before' + e.data.messageType](e.data.messageBody);
   }
 
   onRender(particle: Particle, slotName: string, content: Content) {
