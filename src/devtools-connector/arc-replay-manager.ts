@@ -38,12 +38,14 @@ export class ArcReplayManager {
   private arc: Arc;
   private host: ReplayExecutionHost;
   private element: HTMLElement;
-  
+  private devtoolsChannel: ArcDevtoolsChannel;
+
   constructor(arc: Arc, arcDevtoolsChannel: ArcDevtoolsChannel) {
     this.arc = arc;
-    arcDevtoolsChannel.listen('replay-start', () => this.start());
-    arcDevtoolsChannel.listen('replay-step', (msg: DevtoolsMessage) => this.host.step(msg));
-    arcDevtoolsChannel.listen('replay-stop', () => this.stop());
+    this.devtoolsChannel = arcDevtoolsChannel;
+    this.devtoolsChannel.listen('replay-start', () => this.start());
+    this.devtoolsChannel.listen('replay-step', (msg: DevtoolsMessage) => this.host.step(msg));
+    this.devtoolsChannel.listen('replay-stop', () => this.stop());
   }
 
   private async start() {
@@ -58,7 +60,7 @@ export class ArcReplayManager {
 
     const slotComposer = new DomSlotComposer(elems);
     await slotComposer.initializeRecipe(this.arc, this.arc.activeRecipe.particles);
-    this.host = new ReplayExecutionHost(this.arc, ports[0], slotComposer);
+    this.host = new ReplayExecutionHost(this.arc, ports[0], slotComposer, this.devtoolsChannel);
   }
 
   private stop() {
@@ -109,34 +111,32 @@ export class ArcReplayManager {
 }
 
 class ReplayExecutionHost extends PECOuterPort {
-
-  private slotComposer: SlotComposer;
   private arc: Arc;
+  private slotComposer: SlotComposer;
+  private devtoolsChannel: ArcDevtoolsChannel;
 
-  constructor(arc: Arc, port: MessagePort, slotComposer: SlotComposer) {
+  constructor(arc: Arc, port: MessagePort, slotComposer: SlotComposer, devtoolsChannel: ArcDevtoolsChannel) {
     super(port, arc, false);
-    this.slotComposer = slotComposer;
     this.arc = arc;
+    this.slotComposer = slotComposer;
+    this.devtoolsChannel = devtoolsChannel;
   }
 
   step(msg: DevtoolsMessage) {
     console.log(`Sending ${msg.messageBody.name}`, msg.messageBody.body);
-
-    void this.send(msg.messageBody.name, msg.messageBody.body); 
-
-    //this.InstantiateParticle(particle, particle.id.toString(), particle.spec, stores);
-    //this.DefineHandle(store, store.type.resolvedType(), name);
-    //this.UIEvent(particle, slotName, event);
-    //this.StartRender(particle, slotName, providedSlots, contentTypes);
-    //this.StopRender(particle, slotName);
-    //this.InnerArcRender(transformationParticle, transformationSlotName, hostedSlotId, content);
-    //this.AwaitIdle(this.nextIdentifier++);
-    //this.Stop();
+    void this.send(msg.messageBody.name, msg.messageBody.body);
   }
 
-  // Here we receive the incoming message json/
+  // Here we receive messages from inside the PEC.
   async _processMessage(e) {
     console.log(`Received ${e.data.messageType}:`, e.data.messageBody);
+    this.devtoolsChannel.send({
+      messageType: 'replay-received',
+      messageBody: {
+        name: e.data.messageType,
+        body: e.data.messageBody
+      }
+    });
 
     // Special casing for Rendering.
     if (e.data.messageType === 'Render') {
@@ -144,73 +144,30 @@ class ReplayExecutionHost extends PECOuterPort {
       this.slotComposer.renderSlot(
         this.arc.activeRecipe.particles.find(p => p.id.toString() === msg.particle),
         msg.slotName,
-        msg.content);  
+        msg.content);
     }
   }
 
-  onRender(particle: Particle, slotName: string, content: Content) {    
-  }
-
-  onInitializeProxy(handle: StorageProviderBase, callback: number) {
-  }
-
-  onSynchronizeProxy(handle: StorageProviderBase, callback: number) {
-  }
-
-  onHandleGet(handle: StorageProviderBase, callback: number) {
-  }
-
-  onHandleToList(handle: StorageProviderBase, callback: number) {
-  }
-
-  onHandleSet(handle: StorageProviderBase, data: {}, particleId: string, barrier: string) {
-  }
-
-  onHandleClear(handle: StorageProviderBase, particleId: string, barrier: string) {
-  }
-
-  onHandleStore(handle: StorageProviderBase, callback: number, data: {value: {}, keys: string[]}, particleId: string) {
-  }
-
-  onHandleRemove(handle: StorageProviderBase, callback: number, data: {id: string, keys: string[]}, particleId) {
-  }
-
-  onHandleRemoveMultiple(handle: StorageProviderBase, callback: number, data: [], particleId: string) {
-  }
-
-  onHandleStream(handle: StorageProviderBase, callback: number, pageSize: number, forward: boolean) {
-  }
-
-  onStreamCursorNext(handle: StorageProviderBase, callback: number, cursorId: number) {
-  }
-
-  onStreamCursorClose(handle: StorageProviderBase, cursorId: number) {
-  }
-
-  onIdle(version: number, relevance: Map<Particle, number[]>) {
-  }
-
-  onGetBackingStore(callback: number, storageKey: string, type: Type) {
-  }
-
-  onConstructInnerArc(callback: number, particle: Particle) {
-  }
-
-  onArcCreateHandle(callback: number, arc: Arc, type: Type, name: string) {
-  }
-
-  onArcMapHandle(callback: number, arc: Arc, handle: Handle) {
-  }
-
-  onArcCreateSlot(callback: number, arc: Arc, transformationParticle: Particle, transformationSlotName: string, handleId: string) {
-  }
-
-  onArcLoadRecipe(arc: Arc, recipe: string, callback: number) {
-  }
-
-  onReportExceptionInHost(exception: PropagatedException) {
-  }
-
-  onServiceRequest(particle: Particle, request: {}, callback: number) {
-  }
+  onRender(particle: Particle, slotName: string, content: Content) {}
+  onInitializeProxy(handle: StorageProviderBase, callback: number) {}
+  onSynchronizeProxy(handle: StorageProviderBase, callback: number) {}
+  onHandleGet(handle: StorageProviderBase, callback: number) {}
+  onHandleToList(handle: StorageProviderBase, callback: number) {}
+  onHandleSet(handle: StorageProviderBase, data: {}, particleId: string, barrier: string) {}
+  onHandleClear(handle: StorageProviderBase, particleId: string, barrier: string) {}
+  onHandleStore(handle: StorageProviderBase, callback: number, data: {value: {}, keys: string[]}, particleId: string) {}
+  onHandleRemove(handle: StorageProviderBase, callback: number, data: {id: string, keys: string[]}, particleId) {}
+  onHandleRemoveMultiple(handle: StorageProviderBase, callback: number, data: [], particleId: string) {}
+  onHandleStream(handle: StorageProviderBase, callback: number, pageSize: number, forward: boolean) {}
+  onStreamCursorNext(handle: StorageProviderBase, callback: number, cursorId: number) {}
+  onStreamCursorClose(handle: StorageProviderBase, cursorId: number) {}
+  onIdle(version: number, relevance: Map<Particle, number[]>) {}
+  onGetBackingStore(callback: number, storageKey: string, type: Type) {}
+  onConstructInnerArc(callback: number, particle: Particle) {}
+  onArcCreateHandle(callback: number, arc: Arc, type: Type, name: string) {}
+  onArcMapHandle(callback: number, arc: Arc, handle: Handle) {}
+  onArcCreateSlot(callback: number, arc: Arc, transformationParticle: Particle, transformationSlotName: string, handleId: string) {}
+  onArcLoadRecipe(arc: Arc, recipe: string, callback: number) {}
+  onReportExceptionInHost(exception: PropagatedException) {}
+  onServiceRequest(particle: Particle, request: {}, callback: number) {}
 }

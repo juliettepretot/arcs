@@ -107,6 +107,9 @@ class ArcsPecLog extends MessengerMixin(PolymerElement) {
       [entry][highlight] {
         background-color: #c2e7ff;
       }
+      [entry][received] {
+        background-color: #cfffd2;
+      }
     </style>
     <header class="header">
       <div section>
@@ -122,7 +125,7 @@ class ArcsPecLog extends MessengerMixin(PolymerElement) {
     </header>
     <iron-list id="list" items="{{filteredEntries}}">
       <template>
-        <div entry highlight$=[[eq(item.msgCount,rewindIndex)]]>
+        <div entry highlight$=[[eq(item.msgCount,rewindIndex)]] received$=[[item.received]]>
           <object-explorer data="[[item.explorerData]]" on-expand="_handleExpand">
             <span noPointer on-click="_blockEvent">
               <span index>[[item.msgCount]]:</span>[[item.time]]
@@ -220,6 +223,9 @@ class ArcsPecLog extends MessengerMixin(PolymerElement) {
           // fallthrough
         case 'page-refresh':
           this.reset();
+          break;
+        case 'replay-received':
+          this.receive(msg.messageBody);
           break;
       }
     }
@@ -348,10 +354,14 @@ class ArcsPecLog extends MessengerMixin(PolymerElement) {
   }
 
   // REWIND BELOW
+  // TODO: handle filtering; currently we assume filteredEntries is the same as entries
 
   rewind() {
     this.replaying = true;
     this.rewindIndex = 0;
+    for (let i = 0; i < this.entries.length; i++) {
+      this.set(`filteredEntries.${i}.received`, false);
+    }
     this.send({
       messageType: 'replay-start',
       messageBody: {},
@@ -372,7 +382,24 @@ class ArcsPecLog extends MessengerMixin(PolymerElement) {
 
     do {
       this.rewindIndex++;
-    } while (this.rewindIndex < this.entries.length && !this.entries[this.rewindIndex].hostToPec);
+      if (this.rewindIndex == this.entries.length) {
+        this.replaying = false;
+        break;
+      }
+    } while (!this.entries[this.rewindIndex].hostToPec);
+  }
+
+  // TODO: handle unexpected received calls and missing expected calls
+  receive({name, body}) {
+    body = JSON.stringify(body);  // TODO: use npm json-stable-stringify
+    for (let i = 0; i < this.entries.length; i++) {
+      const entry = this.entries[i];
+      if (!entry.hostToPec && !entry.received && entry.name === name) {
+        if (JSON.stringify(entry.pecMsgBody) === body) {
+          this.set(`filteredEntries.${i}.received`, true);
+        }
+      }
+    }
   }
 
   stop() {
@@ -385,7 +412,6 @@ class ArcsPecLog extends MessengerMixin(PolymerElement) {
   }
 
   eq(i1, i2) {
-    console.log(i1, i2);
     return i1 == i2;
   }
 }
