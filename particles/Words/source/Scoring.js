@@ -91,7 +91,7 @@ class Scoring {
       startstamp: now,
       // TODO(wkorman): Write the below into a Post entity that references
       // the associated Stats instance and other affiliated game entities.
-      author: user.id,
+      author: user.id(),
       createdTimestamp: now,
       message: 'Word Puzzle Game Stats - New game.'
     };

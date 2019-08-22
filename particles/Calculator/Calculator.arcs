@@ -1,0 +1,15 @@
+schema Expression
+  Number lhs
+  Number rhs
+  Text operator
+
+schema Calculation
+  Number value
+
+particle CalculatorInputParticle in 'calculator-input.js'
+  consume root
+
+recipe CalculatorRecipe
+  CalculatorInputParticle
+    
+  description `A Crappy Calculator`
