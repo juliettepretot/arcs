@@ -64,9 +64,13 @@ export class ArcReplayManager {
   }
 
   private stop() {
+    if (!this.host) return;
+
     console.log('Replay stopped for', this.arc.id);
     this.host.close();
     this.element.parentElement.removeChild(this.element);
+    this.element = null;
+    this.host = null;
   }
 
   private createRenderingSurface(): {outer: HTMLElement, containers: {}} {
