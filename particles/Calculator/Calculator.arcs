@@ -16,11 +16,14 @@ particle OperatorParticle in 'calculator-operator.js'
   inout Operator operator
   consume operatorSlot
 
-particle ResultParticle in 'calculator-result.js'
+particle CalculationParticle in 'calculator-calc.js'
   in TermValue lhs
   in TermValue rhs
   in Operator operator
-  inout Calculation result
+  out Calculation result
+
+particle ResultParticle in 'calculator-result.js'
+  in Calculation result
   consume resultSlot
 
 particle ContainerParticle in 'calculator-container.js'
@@ -47,12 +50,15 @@ recipe CalculatorRecipe
 
   OperatorParticle
     operator = operator
-  
-  ResultParticle
+
+  CalculationParticle
     lhs <- lhs
     rhs <- rhs
     operator <- operator
     result -> result
+  
+  ResultParticle
+    result <- result
 
   ContainerParticle
     consume root as root
