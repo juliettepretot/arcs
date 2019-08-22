@@ -21,7 +21,6 @@ import {Type} from '../runtime/type.js';
 import {Modality} from '../runtime/modality.js';
 import {SlotComposer} from '../runtime/slot-composer.js';
 import {PlanningModalityHandler} from '../planning/arcs-planning.js';
-import { Slot } from '../runtime/recipe/slot.js';
 
 // Copy from the shell code.
 const DomSlotComposer = class extends SlotComposer {
@@ -47,7 +46,7 @@ export class ArcReplayManager {
     arcDevtoolsChannel.listen('replay-stop', () => this.stop());
   }
 
-  private start() {
+  private async start() {
     console.log('Replay invoked for', this.arc.id);
     this.element = this.createRenderingSurface();
 
@@ -55,11 +54,14 @@ export class ArcReplayManager {
     if (ports.length !== 1) {
       throw new Error('ArcReplayManager does not currently support more than one port')
     }
-    this.host = new ReplayExecutionHost(this.arc, ports[0], new DomSlotComposer({
+
+    const slotComposer = new DomSlotComposer({
       containers: {
         root: this.element
       }
-    }));
+    });
+    await slotComposer.initializeRecipe(this.arc, this.arc.activeRecipe.particles);
+    this.host = new ReplayExecutionHost(this.arc, ports[0], slotComposer);
   }
 
   private stop() {
@@ -88,10 +90,12 @@ export class ArcReplayManager {
 class ReplayExecutionHost extends PECOuterPort {
 
   private slotComposer: SlotComposer;
+  private arc: Arc;
 
   constructor(arc: Arc, port: MessagePort, slotComposer: SlotComposer) {
     super(port, arc, false);
     this.slotComposer = slotComposer;
+    this.arc = arc;
   }
 
   step(msg: DevtoolsMessage) {
@@ -112,16 +116,18 @@ class ReplayExecutionHost extends PECOuterPort {
   // Here we receive the incoming message json/
   async _processMessage(e) {
     console.log(`Received ${e.data.messageType}:`, e.data.messageBody);
-    // assert(this['before' + e.data.messageType] !== undefined);
-    // const count = this.messageCount++;
-    // if (this.inspector) {
-    //   this.inspector.pecMessage('on' + e.data.messageType, e.data.messageBody, count, e.data.stack);
-    // }
-    // this['before' + e.data.messageType](e.data.messageBody);
+
+    // Special casing for Rendering.
+    if (e.data.messageType === 'Render') {
+      const msg = e.data.messageBody;
+      this.slotComposer.renderSlot(
+        this.arc.activeRecipe.particles.find(p => p.id.toString() === msg.particle),
+        msg.slotName,
+        msg.content);  
+    }
   }
 
-  onRender(particle: Particle, slotName: string, content: Content) {
-    this.slotComposer.renderSlot(particle, slotName, content);
+  onRender(particle: Particle, slotName: string, content: Content) {    
   }
 
   onInitializeProxy(handle: StorageProviderBase, callback: number) {
