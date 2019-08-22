@@ -10,7 +10,10 @@ import android.view.View;
 import android.webkit.JavascriptInterface;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
+import android.widget.Button;
 import android.widget.FrameLayout;
+import android.widget.LinearLayout;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import org.json.JSONException;
@@ -44,6 +47,10 @@ public class MainActivity extends Activity {
             NotificationManager.IMPORTANCE_DEFAULT);
     notificationManager.createNotificationChannel(channel);
 
+    TextView refreshButton = new TextView(this);
+    refreshButton.setText("Refresh");
+    refreshButton.setOnClickListener(v -> shellWebView.reload());
+
     shellWebView = new WebView(this);
     shellWebView.setVisibility(View.GONE);
     setWebviewSettings(shellWebView.getSettings());
@@ -57,7 +64,9 @@ public class MainActivity extends Activity {
 
     WebView.setWebContentsDebuggingEnabled(true);
 
-    FrameLayout layout = new FrameLayout(this);
+    LinearLayout layout = new LinearLayout(this);
+    layout.setOrientation(LinearLayout.VERTICAL);
+    layout.addView(refreshButton);
     layout.addView(shellWebView);
     layout.addView(renderingWebView);
     setContentView(layout);
@@ -95,8 +104,9 @@ public class MainActivity extends Activity {
     logger.info("Java received message: " + message);
     switch (message) {
       case "ready":
-        sendToShell("{\"message\": \"spawn\", \"recipe\": \"Notification\"}");
-        sendToShell("{\"message\": \"spawn\", \"recipe\": \"Restaurants\"}");
+//        sendToShell("{\"message\": \"spawn\", \"recipe\": \"Notification\"}");
+//        sendToShell("{\"message\": \"spawn\", \"recipe\": \"Restaurants\"}");
+        sendToShell("{\"message\": \"spawn\", \"recipe\": \"CatOfTheDay\"}");
         break;
       case "slot":
         if (obj.isNull("content")) {
