@@ -56,11 +56,7 @@ export class ArcReplayManager {
       throw new Error('ArcReplayManager does not currently support more than one port')
     }
 
-    const slotComposer = new DomSlotComposer({
-      containers: {
-        root: elems.inner
-      }
-    });
+    const slotComposer = new DomSlotComposer(elems);
     await slotComposer.initializeRecipe(this.arc, this.arc.activeRecipe.particles);
     this.host = new ReplayExecutionHost(this.arc, ports[0], slotComposer);
   }
@@ -71,7 +67,7 @@ export class ArcReplayManager {
     this.element.parentElement.removeChild(this.element);
   }
 
-  private createRenderingSurface(): {outer: HTMLElement, inner: HTMLElement} {
+  private createRenderingSurface(): {outer: HTMLElement, containers: {}} {
     const outer = document.createElement('div');
     outer.style.cssText = `
       position: absolute;
@@ -82,8 +78,8 @@ export class ArcReplayManager {
       z-index: 10001;
       background: rgba(0,0,0,.5);`;
 
-    const inner = document.createElement('div');
-    inner.style.cssText = `
+    const root = document.createElement('div');
+    root.style.cssText = `
       position: absolute;
       top: 24px;
       left: 24px;
@@ -94,10 +90,21 @@ export class ArcReplayManager {
       background: white;
       box-shadow: 0 0 10px rgba(0,0,0,.5);`;
 
-    outer.appendChild(inner);
+    const modal = document.createElement('div');
+    modal.style.cssText = `
+      position: fixed;
+      top: 0;
+      right: 0;
+      bottom: 0;
+      left: 0;
+      box-sizing: border-box;
+      pointer-events: none;`;
+
+    outer.appendChild(root);
+    outer.appendChild(modal);
 
     document.body.appendChild(outer);
-    return {outer, inner};
+    return {outer, containers: {root, modal}};
   }
 }
 
