@@ -308,7 +308,7 @@ class ArcsRecipeEditor extends MessengerMixin(PolymerElement) {
     switch (msg.messageType) {
       case 'arc-selected':
         this.arcId = msg.messageBody.arcId;
-        if (manifest !== '') this.runPlanner();
+        if (this.manifest !== '') this.runPlanner();
         if (!this.strategies) {
           this.send({
             messageType: 'fetch-strategies',

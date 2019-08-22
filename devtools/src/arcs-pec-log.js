@@ -398,9 +398,11 @@ class ArcsPecLog extends MessengerMixin(PolymerElement) {
       if (!entry.hostToPec && !entry.received && entry.name === name) {
         if (JSON.stringify(entry.pecMsgBody) === body) {
           this.set(`filteredEntries.${i}.received`, true);
+          return;
         }
       }
     }
+    console.log('The message not found!', name, body);
   }
 
   stop() {
