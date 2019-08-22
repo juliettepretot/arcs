@@ -31,10 +31,10 @@ particle ContainerParticle in 'calculator-container.js'
     provide resultSlot
 
 recipe CalculatorRecipe
-  create as lhs
-  create as rhs
-  create as operator
-  create as result
+  create #volatile as lhs
+  create #volatile as rhs
+  create #volatile as operator
+  create #volatile as result
   slot #root as root
 
   TermParticle

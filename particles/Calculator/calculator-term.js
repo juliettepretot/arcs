@@ -2,7 +2,7 @@
 defineParticle(({DomParticle, html}) => {
   return class extends DomParticle {
     get template() {
-      return html`<input type="number" on-keyup="changed" value$="{{value}}" />`;
+      return html`<input type="number" on-keyup="changed" on-change="changed" value$="{{value}}" />`;
     }
 
     setHandles(handles) {

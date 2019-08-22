@@ -21,7 +21,7 @@ defineParticle(({DomParticle, html}) => {
 
     update({lhs, rhs, operator, result}, state) {
       if (!!lhs && !!rhs) {
-        const operatorVal = (operator && operator.operator) || 'add';
+        const operatorVal = operator && operator.operator;
         this.processAnswer(lhs, operatorVal, rhs, state.lastResult);
       }
     }
@@ -40,10 +40,10 @@ defineParticle(({DomParticle, html}) => {
           resultValue = lhs.value * rhs.value;
           break;
         case 'divide':
-          if (rhs.value == 0) {
-            throw Error("You divided by zero, dummy.")
-          }
           resultValue = lhs.value / rhs.value;
+          break;
+        default:
+          throw Error("Invalid operator");
           break;
       }
 

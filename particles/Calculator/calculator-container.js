@@ -2,10 +2,17 @@ defineParticle(({DomParticle, html}) => {
   return class extends DomParticle {
     get template() {
       return html`
-        <span slotid="lhsTerm" style="display: inline-block"></span>
-        <span slotid="operatorSlot" style="display: inline-block"></span>
-        <span slotid="rhsTerm" style="display: inline-block"></span>
-        = <span slotid="resultSlot" style="display: inline-block"></span>
+        <style>
+          .calculator-body > span {
+            display: inline-block;
+          }
+        </style>
+        <div class="calculator-body">
+          <span class="lhs" slotid="lhsTerm"></span>
+          <span class="operator" slotid="operatorSlot"></span>
+          <span class="rhs" slotid="rhsTerm"></span>
+          = <span class="result" slotid="resultSlot"></span>
+        </div>
       `;
     }
   };
