@@ -115,6 +115,12 @@ class ArcsPecLog extends MessengerMixin(PolymerElement) {
       [entry][received] {
         background-color: #cfffd2;
       }
+      iron-icon {
+        cursor: pointer;
+      }
+      iron-icon[disabled] {
+        cursor: default;
+      }
     </style>
     <header class="header">
       <div section>
