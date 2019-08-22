@@ -13,6 +13,7 @@ import {assert} from '../platform/assert-web.js';
 import {PECOuterPort, APIPort} from './api-channel.js';
 import {reportSystemException, PropagatedException} from './arc-exceptions.js';
 import {Arc} from './arc.js';
+import {Runnable} from './hot.js';
 import {Manifest} from './manifest.js';
 import {StorageStub} from './storage-stub.js';
 import {MessagePort} from './message-channel.js';
@@ -39,8 +40,9 @@ export type StopRenderOptions = {
 };
 
 export class ParticleExecutionHost {
-  private readonly apiPorts: PECOuterPort[];
-  private readonly portByParticle = new Map<Particle, PECOuterPort>();
+  private readonly _apiPorts: PECOuterPort[];
+  private readonly _portByParticle = new Map<Particle, PECOuterPort>();
+  close : Runnable;
   private readonly arc: Arc;
   private nextIdentifier = 0;
   public readonly slotComposer: SlotComposer;
@@ -50,30 +52,34 @@ export class ParticleExecutionHost {
   public readonly particles: Particle[] = [];
 
   constructor(slotComposer: SlotComposer, arc: Arc, ports: MessagePort[]) {
+    this.close = () => {
+      ports.forEach(port => port.close());
+      this._apiPorts.forEach(apiPort => apiPort.close());
+    };
+
     this.arc = arc;
     this.slotComposer = slotComposer;
-    this.apiPorts = ports.map(port => new PECOuterPortImpl(port, arc));
+
+    const pec = this;
+
+    this._apiPorts = ports.map(port => new PECOuterPortImpl(port, arc));
   }
 
   private choosePortForParticle(particle: Particle): PECOuterPort {
-    assert(!this.portByParticle.has(particle), `port already found for particle '${particle.spec.name}'`);
-    const port = this.apiPorts.find(port => particle.isJavaParticle() === port.supportsJavaParticle());
+    assert(!this._portByParticle.has(particle), `port already found for particle '${particle.spec.name}'`);
+    const port = this._apiPorts.find(port => particle.isJavaParticle() === port.supportsJavaParticle());
     assert(!!port, `No port found for '${particle.spec.name}'`);
-    this.portByParticle.set(particle, port);
+    this._portByParticle.set(particle, port);
     return this.getPort(particle);
   }
 
   private getPort(particle: Particle): PECOuterPort {
-    assert(this.portByParticle.has(particle), `Cannot get port for particle '${particle.spec.name}'`);
-    return this.portByParticle.get(particle);
-  }
-
-  close() {
-    this.apiPorts.forEach(apiPort => apiPort.close());
+    assert(this._portByParticle.has(particle), `Cannot get port for particle '${particle.spec.name}'`);
+    return this._portByParticle.get(particle);
   }
 
   stop() {
-    this.apiPorts.forEach(apiPort => apiPort.Stop());
+    this._apiPorts.forEach(apiPort => apiPort.Stop());
   }
 
   get idle(): Promise<Map<Particle, number[]>> | undefined {
@@ -83,12 +89,12 @@ export class ParticleExecutionHost {
       });
     }
     this.idleVersion = this.nextIdentifier;
-    this.apiPorts.forEach(apiPort => apiPort.AwaitIdle(this.nextIdentifier++));
+    this._apiPorts.forEach(apiPort => apiPort.AwaitIdle(this.nextIdentifier++));
     return this.idlePromise;
   }
 
   get messageCount(): number {
-    return [...this.apiPorts.values()].map(apiPort => apiPort.messageCount).reduce((prev, current) => prev + current, 0);
+    return [...this._apiPorts.values()].map(apiPort => apiPort.messageCount).reduce((prev, current) => prev + current, 0);
   }
 
   sendEvent(particle, slotName, event): void {
