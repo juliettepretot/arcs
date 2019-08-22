@@ -1,0 +1,10 @@
+
+
+
+android_binary(
+    name = "app",
+    assets = glob(["assets/**"]),
+    assets_dir = "assets",
+    manifest = "AndroidManifest.xml",
+    deps = ["//src/main/java/com/example/bazel:greeter_activity"],
+)
