@@ -49,13 +49,17 @@ export class ArcReplayManager {
   }
 
   private async start() {
+    if (this.host) {
+      this.stop();
+    }
+
     console.log('Replay invoked for', this.arc.id);
     const elems = this.createRenderingSurface();
     this.element = elems.outer;
 
     const ports = this.arc.createPorts(this.arc.id);
     if (ports.length !== 1) {
-      throw new Error('ArcReplayManager does not currently support more than one port')
+      throw new Error('ArcReplayManager does not currently support more than one port');
     }
 
     const slotComposer = new DomSlotComposer(elems);

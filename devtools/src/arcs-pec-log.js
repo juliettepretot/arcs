@@ -118,7 +118,7 @@ class ArcsPecLog extends MessengerMixin(PolymerElement) {
         <filter-input filter="{{searchParams}}"></filter-input>
         <div divider></div>
         <iron-icon title="Rewind" icon="av:replay" on-click="rewind"></iron-icon>
-        <iron-icon title="Step" icon="av:skip-next" on-click="step" disabled$=[[!replaying]]></iron-icon>
+        <iron-icon title="Step" icon="av:skip-next" on-click="step" disabled$=[[!moreSteps]]></iron-icon>
         <iron-icon title="Replay" icon="av:fast-forward" disabled></iron-icon>
         <iron-icon title="Stop" icon="av:stop" on-click="stop" disabled$=[[!replaying]]></iron-icon>
       </div>
@@ -358,6 +358,7 @@ class ArcsPecLog extends MessengerMixin(PolymerElement) {
 
   rewind() {
     this.replaying = true;
+    this.moreSteps = this.entries.length > 0;
     this.rewindIndex = 0;
     for (let i = 0; i < this.entries.length; i++) {
       this.set(`filteredEntries.${i}.received`, false);
@@ -383,7 +384,7 @@ class ArcsPecLog extends MessengerMixin(PolymerElement) {
     do {
       this.rewindIndex++;
       if (this.rewindIndex == this.entries.length) {
-        this.replaying = false;
+        this.moreSteps = false;
         break;
       }
     } while (!this.entries[this.rewindIndex].hostToPec);
@@ -404,6 +405,7 @@ class ArcsPecLog extends MessengerMixin(PolymerElement) {
 
   stop() {
     this.replaying = false;
+    this.moreSteps = false;
     this.rewindIndex = -1;
     this.send({
       messageType: 'replay-stop',
