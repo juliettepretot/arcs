@@ -104,6 +104,9 @@ class ArcsPecLog extends MessengerMixin(PolymerElement) {
       object-explorer {
         margin: 2px;
       }
+      [entry][highlight] {
+        background-color: #c2e7ff;
+      }
     </style>
     <header class="header">
       <div section>
@@ -119,7 +122,7 @@ class ArcsPecLog extends MessengerMixin(PolymerElement) {
     </header>
     <iron-list id="list" items="{{filteredEntries}}">
       <template>
-        <div entry>
+        <div entry highlight$=[[eq(item.msgCount,rewindIndex)]]>
           <object-explorer data="[[item.explorerData]]" on-expand="_handleExpand">
             <span noPointer on-click="_blockEvent">
               <span index>[[item.msgCount]]:</span>[[item.time]]
@@ -195,7 +198,8 @@ class ArcsPecLog extends MessengerMixin(PolymerElement) {
     this.originalCallName = {}; // Callback id to original method name;
     this.highlightedGroupCallbackId = null;
     this.downloadEnabled = false;
-    this.replaying = false; 
+    this.replaying = false;
+    this.rewindIndex = -1;
   }
 
   onMessageBundle(messages) {
@@ -362,10 +366,16 @@ class ArcsPecLog extends MessengerMixin(PolymerElement) {
 
   stop() {
     this.replaying = false;
+    this.rewindIndex = -1;
     this.send({
       messageType: 'replay-stop',
       arcId: this.arcId
     });
+  }
+
+  eq(i1, i2) {
+    console.log(i1, i2);
+    return i1 == i2;
   }
 }
 
