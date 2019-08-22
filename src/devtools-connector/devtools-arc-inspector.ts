@@ -21,6 +21,7 @@ import {DevtoolsConnection} from './devtools-connection.js';
 import {enableTracingAdapter} from './tracing-adapter.js';
 import {Slot} from '../runtime/recipe/slot.js';
 import {HotCodeReloader} from './hot-code-reloader.js';
+import {ArcReplayManager} from './arc-replay-manager.js';
 
 type StackFrame = {method:string, location?:string, target?:string, targetClass?:string};
 
@@ -64,6 +65,7 @@ class DevtoolsArcInspector implements ArcInspector {
       const unused1 = new ArcStoresFetcher(arc, this.arcDevtoolsChannel);
       const unused2 = new ArcPlannerInvoker(arc, this.arcDevtoolsChannel);
       const unused3 = new HotCodeReloader(arc, this.arcDevtoolsChannel);
+      const unused4 = new ArcReplayManager(arc, this.arcDevtoolsChannel);
 
       this.arcDevtoolsChannel.send({
         messageType: 'arc-available',
