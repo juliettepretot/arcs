@@ -130,7 +130,7 @@ defineParticle(({UiParticle, html}) => {
   <div row>
     <div flex row0>
       <div detail-caption>Address</div>
-      <div detail-content unsafe-html="{{addr}}"></div>
+      <div detail-content unsafe-html="{{addr}}" on-click="showAddressNotification"></div>
       <div detail-caption>Phone</div>
       <div detail-content>{{phone}}</div>
       <div detail-caption>Website</div>
@@ -177,6 +177,9 @@ defineParticle(({UiParticle, html}) => {
     //shouldRender(props, state) {
       //return Boolean(state.restaurant);
     //}
+    showAddressNotification() {
+      this.state = {clickedAddress: this.state.detail.vicinity};
+    }
     render(props, {restaurant, detail}) {
       if (!restaurant) {
         return null;
@@ -206,6 +209,16 @@ defineParticle(({UiParticle, html}) => {
         });
       }
       return model;
+    }
+    renderModel(model) {
+      if (this.state.clickedAddress) {
+        super.renderModel({
+          modality: 'notification',
+          text: this.state.clickedAddress
+        });
+        this.state = {clickedAddress: ''};
+      }
+      super.renderModel(model);
     }
     reviewToHtml(review) {
       const photo = review.profile_photo_url || '';

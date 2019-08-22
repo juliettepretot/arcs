@@ -74,14 +74,18 @@ public class MainActivity extends Activity {
     settings.setAllowUniversalAccessFromFileURLs(true);
   }
 
-  private void sendToShell(String message) {
+  @JavascriptInterface
+  public void sendToShell(String message) {
     logger.info("Sending to JS: " + message);
     shellWebView.post(() -> shellWebView.evaluateJavascript(String.format("window.ShellApi.receive(%s);", message), null));
   }
 
-  private void render(JSONObject obj) {
+  private void render(JSONObject obj, int tid) {
     logger.info("Sending something to renderer.");
-    renderingWebView.post(() -> renderingWebView.evaluateJavascript(String.format("window.renderer.render(%s);", obj.toString()), null));
+    renderingWebView.post(() -> {
+      renderingWebView.evaluateJavascript(String.format("window.renderer.dispatch = (pid, eventlet) => Android.sendToShell(JSON.stringify({message: 'event', tid: %s, pid, eventlet}));", tid), null);
+      renderingWebView.evaluateJavascript(String.format("window.renderer.render(%s);", obj.toString()), null);
+    });
   }
 
   @JavascriptInterface
@@ -104,7 +108,8 @@ public class MainActivity extends Activity {
         }
         JSONObject model = content.getJSONObject("model");
         if (model.isNull("modality")) {
-          render(content);
+          int tid = obj.getInt("tid");
+          render(content, tid);
         } else {
           String modality = model.getString("modality");
           processModality(modality, model);
