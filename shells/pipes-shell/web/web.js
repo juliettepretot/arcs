@@ -42,9 +42,9 @@ const composerFactory = modality => {
   }
 };
 
-const client = window.DeviceClient || {};
+window.startTheShell = async () => {
+  const client = window.DeviceClient || {};
 
-(async () => {
   // if remote DevTools are requested, wait for connect
   await DevtoolsSupport();
   // configure pipes and get a bus
@@ -61,4 +61,6 @@ const client = window.DeviceClient || {};
       bus.receive({message: 'ingest', modality: 'dom', entity: {type: 'caption', name: 'Dogs are awesome'}});
     };
   }
-})();
+};
+
+window.onload = () => Android.onLoad();
