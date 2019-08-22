@@ -401,11 +401,10 @@ class ArcsPecLog extends MessengerMixin(PolymerElement) {
 
   // TODO: handle unexpected received calls and missing expected calls
   receive({name, body}) {
-    body = JSON.stringify(body);  // TODO: use npm [fast-]json-stable-stringify?
     for (let i = 0; i < this.entries.length; i++) {
       const entry = this.entries[i];
       if (!entry.hostToPec && !entry.received && entry.name === name) {
-        if (JSON.stringify(entry.pecMsgBody) === body) {
+        if (this.deepEqual(entry.pecMsgBody, body)) {
           this.set(`filteredEntries.${i}.received`, true);
           return;
         }
@@ -433,6 +432,30 @@ class ArcsPecLog extends MessengerMixin(PolymerElement) {
 
   eq(i1, i2) {
     return i1 == i2;
+  }
+
+  deepEqual(x, y) {
+    if (x === y) {
+      return true;
+    }
+    else if ((typeof x == 'object' && x != null) && (typeof y == 'object' && y != null)) {
+      if (Object.keys(x).length != Object.keys(y).length) {
+        return false;
+      }
+  
+      for (const prop in x) {
+        if (y.hasOwnProperty(prop)) {  
+          if (!this.deepEqual(x[prop], y[prop])) {
+            return false;
+          }
+        } else {
+          return false;
+        }
+      }
+      return true;
+    } else {
+      return false;
+    }
   }
 }
 

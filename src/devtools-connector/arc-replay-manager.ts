@@ -142,7 +142,7 @@ class ReplayExecutionHost extends PECOuterPort {
       messageType: 'replay-received',
       messageBody: {
         name: e.data.messageType,
-        body: e.data.messageBody
+        body: JSON.parse(JSON.stringify(e.data.messageBody))
       }
     });
 
