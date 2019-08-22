@@ -8,7 +8,23 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-defineParticle(({DomParticle, html, resolver}) => {
+ 'use strict';
+
+defineParticle(({UiParticle}) => {
+
+    return class extends UiParticle {
+        render(props, state) {
+            return {
+                modality: 'notification',
+                text: 'Hello world!'
+            };
+        }
+    };
+
+});
+
+
+/*defineParticle(({DomParticle, html, resolver}) => {
     return class extends DomParticle {
 
         get template() {
@@ -23,4 +39,4 @@ defineParticle(({DomParticle, html, resolver}) => {
             }
         }
     };
-});
+});*/
