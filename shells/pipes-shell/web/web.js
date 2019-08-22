@@ -44,7 +44,6 @@ const composerFactory = modality => {
 
 window.startTheShell = async () => {
   const client = window.DeviceClient || {};
-
   // if remote DevTools are requested, wait for connect
   await DevtoolsSupport();
   // configure pipes and get a bus
@@ -63,4 +62,4 @@ window.startTheShell = async () => {
   }
 };
 
-window.onload = () => Android.onLoad();
+window.onload = () => window.Android && window.Android.onLoad();

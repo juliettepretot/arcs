@@ -24,6 +24,7 @@ export const connectToPlatform = async Application => {
       delegate(packet);
     }
   };
+  setTimeout(() => arcsProcess.startTheShell(), 2000);
   // bus packet handlers
   const dispatcher = {
     ready(packet) {

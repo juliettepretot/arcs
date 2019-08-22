@@ -14,6 +14,7 @@ const manifest = `
 import 'https://$particles/PipeApps/PipeApps.arcs'
 import 'https://$particles/Notification/Notification.arcs'
 import 'https://$particles/Restaurants/Restaurants.arcs'
+import 'https://$particles/Cats/Cats.arcs'
 `;
 
 export const requireContext = async () => {

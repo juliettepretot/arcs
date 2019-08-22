@@ -19,6 +19,8 @@ const Application = {
     }, 300);
     // upon ready, we right away ask for an Arc
     this.arcTid = this.send({message: 'spawn', recipe: 'Notification'});
+    // upon ready, we right away ask for an Arc
+    this.catsTid = this.send({message: 'spawn', recipe: 'CatOfTheDay'});
   },
   // handle packets that were not otherwised consumed
   receive(packet) {
