@@ -11,6 +11,8 @@
 import '../../configuration/whitelisted.js';
 import '../../lib/platform/loglevel-web.js';
 import {SlotObserver} from '../../lib/renderer.js';
+// fetch override that supports file
+import '../source/lib/fetch-local.js';
 
 const renderer = new SlotObserver(document.body);
 
