@@ -111,9 +111,10 @@ class ArcsPecLog extends MessengerMixin(PolymerElement) {
         <div divider></div>
         <filter-input filter="{{searchParams}}"></filter-input>
         <div divider></div>
-        <iron-icon title="Rewind" icon="av:fast-rewind" on-click="rewind"></iron-icon>
-        <iron-icon title="Step" icon="av:skip-next"></iron-icon>
-        <iron-icon title="Replay" icon="av:fast-forward"></iron-icon>
+        <iron-icon title="Rewind" icon="av:replay" on-click="rewind"></iron-icon>
+        <iron-icon title="Step" icon="av:skip-next" on-click="step" disabled$=[[!replaying]]></iron-icon>
+        <iron-icon title="Replay" icon="av:fast-forward" disabled></iron-icon>
+        <iron-icon title="Stop" icon="av:stop" on-click="stop" disabled$=[[!replaying]]></iron-icon>
       </div>
     </header>
     <iron-list id="list" items="{{filteredEntries}}">
@@ -194,6 +195,7 @@ class ArcsPecLog extends MessengerMixin(PolymerElement) {
     this.originalCallName = {}; // Callback id to original method name;
     this.highlightedGroupCallbackId = null;
     this.downloadEnabled = false;
+    this.replaying = false; 
   }
 
   onMessageBundle(messages) {
@@ -338,10 +340,31 @@ class ArcsPecLog extends MessengerMixin(PolymerElement) {
   // REWIND BELOW
 
   rewind() {
+    this.replaying = true;
+    this.rewindIndex = 0;
     this.send({
-      messageType: 'arc-replay',
+      messageType: 'replay-start',
       messageBody: {},
       arcId: this.arcId,
+    });
+  }
+  
+  step() {
+    if (this.rewindIndex >= this.entries.lenght) return;
+    this.rewindIndex++;
+    console.log(this.entries[this.rewindIndex]);
+    this.send({
+      messageType: 'replay-step',
+      messageBody: this.entries[this.rewindIndex].pecMsgBody,
+      arcId: this.arcId
+    });
+  }
+
+  stop() {
+    this.replaying = false;
+    this.send({
+      messageType: 'replay-stop',
+      arcId: this.arcId
     });
   }
 }
