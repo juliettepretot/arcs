@@ -12,12 +12,9 @@ defineParticle(({DomParticle, html, resolver}) => {
     return class extends DomParticle {
 
         async update({today, allCats}) {
-            //const todayHandle = this.handles.get('today');
-            //const today = await todayHandle.get();
             if (today) {
                 const cat = this.handles.get('cat');
-                //const allCats = this.handles.get('allCats');
-                cat.set(new cat.entityClass(allCats[today.day]));
+                cat.set(new cat.entityClass(allCats[Math.floor(Math.random()*31)]));
                 console.log(cat);
             }
         }

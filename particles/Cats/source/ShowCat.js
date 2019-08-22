@@ -13,10 +13,10 @@
 defineParticle(({UiParticle}) => {
 
     return class extends UiParticle {
-        render(props, state) {
+        render({cat}) {
             return {
                 modality: 'notification',
-                text: 'Hello world!'
+                text: 'Today\'s Cat is ' + cat.name
             };
         }
     };
