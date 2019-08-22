@@ -123,12 +123,17 @@ constructor({id, context, pecFactories, slotComposer, loader, storageKey, storag
     this.inspectorFactory = inspectorFactory;
     this.inspector = inspectorFactory && inspectorFactory.create(this);
     this.storageKey = storageKey;
-    const ports = this.pecFactories.map(f => f(this.generateID(), this.idGenerator));
+    const ports = this.createPorts(this.generateID());
     this.pec = new ParticleExecutionHost(slotComposer, this, ports);
     this.storageProviderFactory = storageProviderFactory || new StorageProviderFactory(this.id);
     
     this.volatileStorageDriverProvider = new VolatileStorageDriverProvider(this);
     DriverFactory.register(this.volatileStorageDriverProvider);
+  }
+
+  // Also used by the ArcReplayManager.
+  createPorts(id: Id) {
+    return this.pecFactories.map(f => f(id, this.idGenerator));
   }
 
   get loader(): Loader {
