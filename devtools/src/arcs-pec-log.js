@@ -130,7 +130,7 @@ class ArcsPecLog extends MessengerMixin(PolymerElement) {
         <div divider></div>
         <iron-icon title="Rewind" icon="av:replay" on-click="rewind"></iron-icon>
         <iron-icon title="Step" icon="av:skip-next" on-click="step" disabled$=[[!eq(replaying,1)]]></iron-icon>
-        <iron-icon title="Replay" icon="av:fast-forward" disabled></iron-icon>
+        <iron-icon title="Replay" icon="av:fast-forward" on-click="run" disabled$=[[!eq(replaying,1)]]></iron-icon>
         <iron-icon title="Stop" icon="av:stop" on-click="stop" disabled$=[[eq(replaying,0)]]></iron-icon>
       </div>
     </header>
@@ -392,11 +392,18 @@ class ArcsPecLog extends MessengerMixin(PolymerElement) {
 
     do {
       this.rewindIndex++;
-      if (this.rewindIndex == this.entries.length) {
+      if (this.rewindIndex === this.entries.length) {
         this.replaying = ReplayState.done;
         break;
       }
     } while (!this.entries[this.rewindIndex].hostToPec);
+  }
+
+  run() {
+    if (this.replaying === ReplayState.started) {
+      this.step();
+      setTimeout(() => this.run(), 500);
+    }
   }
 
   // TODO: handle unexpected received calls and missing expected calls
@@ -431,7 +438,7 @@ class ArcsPecLog extends MessengerMixin(PolymerElement) {
   }
 
   eq(i1, i2) {
-    return i1 == i2;
+    return i1 === i2;
   }
 
   deepEqual(x, y) {
