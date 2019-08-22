@@ -1,15 +1,62 @@
-schema Expression
-  Number lhs
-  Number rhs
-  Text operator
 
 schema Calculation
   Number value
 
-particle CalculatorInputParticle in 'calculator-input.js'
+schema TermValue
+  Number value
+
+schema Operator
+  Text operator
+
+particle TermParticle in 'calculator-term.js'
+  inout TermValue term
+  consume termSlot
+
+particle OperatorParticle in 'calculator-operator.js'
+  inout Operator operator
+  consume operatorSlot
+
+particle ResultParticle in 'calculator-result.js'
+  in TermValue lhs
+  in TermValue rhs
+  in Operator operator
+  inout Calculation result
+  consume resultSlot
+
+particle ContainerParticle in 'calculator-container.js'
   consume root
+    provide lhsTerm
+    provide operatorSlot
+    provide rhsTerm
+    provide resultSlot
 
 recipe CalculatorRecipe
-  CalculatorInputParticle
+  create as lhs
+  create as rhs
+  create as operator
+  create as result
+  slot #root as root
+
+  TermParticle
+    term = lhs
+    consume termSlot as lhsTerm
+
+  TermParticle
+    term = rhs
+    consume termSlot as rhsTerm
+
+  OperatorParticle
+    operator = operator
+  
+  ResultParticle
+    lhs <- lhs
+    rhs <- rhs
+    operator <- operator
+    result -> result
+
+  ContainerParticle
+    consume root as root
+      provide lhsTerm as lhsTerm
+      provide rhsTerm as rhsTerm
     
   description `A Crappy Calculator`

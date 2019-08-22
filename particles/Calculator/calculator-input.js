@@ -29,7 +29,7 @@ defineParticle(({DomParticle,html}) => {
         outState.calculation = lhs * rhs;
       } else if (operator == "divide") {
         if (rhs === 0) {
-          crash();
+          this.crash();
         }
         outState.calculation = lhs / rhs;
       }
@@ -37,18 +37,19 @@ defineParticle(({DomParticle,html}) => {
     }
 
     onLhsChange(e) {
-      console.log(`LHS is ${e.data.value}`);
       this.setState({lhs: parseFloat(e.data.value)});
     }
 
     onRhsChange(e) {
-      console.log(`RHS is ${e.data.value}`);
       this.setState({rhs: parseFloat(e.data.value)});
     }
 
     onOperatorChange(e) {
-      console.log(`Operator is ${e.data.value}`);
       this.setState({operator: e.data.value});
+    }
+
+    crash() {
+      throw new Error("UH OH!!!!!!!!!!1");
     }
   };
 });
