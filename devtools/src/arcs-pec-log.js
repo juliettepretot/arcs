@@ -110,7 +110,7 @@ class ArcsPecLog extends MessengerMixin(PolymerElement) {
         background-color: #c2e7ff;
       }
       [entry][sent] {
-        color: grey;
+        background-color: #eee;
       }
       [entry][received] {
         background-color: #cfffd2;

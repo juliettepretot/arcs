@@ -131,13 +131,13 @@ class ReplayExecutionHost extends PECOuterPort {
   }
 
   step(msg: DevtoolsMessage) {
-    console.log(`Sending ${msg.messageBody.name}`, msg.messageBody.body);
+    // console.log(`Sending ${msg.messageBody.name}`, msg.messageBody.body);
     void this.send(msg.messageBody.name, msg.messageBody.body);
   }
 
   // Here we receive messages from inside the PEC.
   async _processMessage(e) {
-    console.log(`Received ${e.data.messageType}:`, e.data.messageBody);
+    // console.log(`Received ${e.data.messageType}:`, e.data.messageBody);
     this.devtoolsChannel.send({
       messageType: 'replay-received',
       messageBody: {
