@@ -18,6 +18,23 @@ import {Content} from '../runtime/slot-consumer.js';
 import {StorageProviderBase} from '../runtime/storage/storage-provider-base.js';
 import {Type} from '../runtime/type.js';
 
+import {Modality} from '../runtime/modality.js';
+import {SlotComposer} from '../runtime/slot-composer.js';
+import {PlanningModalityHandler} from '../planning/arcs-planning.js';
+import { Slot } from '../runtime/recipe/slot.js';
+
+// Copy from the shell code.
+const DomSlotComposer = class extends SlotComposer {
+  constructor(options: {}) {
+    super({
+      modalityName: Modality.Name.Dom,
+      modalityHandler: PlanningModalityHandler.domHandler,
+      ...options
+    });
+  }
+};
+
+
 export class ArcReplayManager {
   private arc: Arc;
   private host: ReplayExecutionHost;
@@ -38,7 +55,11 @@ export class ArcReplayManager {
     if (ports.length !== 1) {
       throw new Error('ArcReplayManager does not currently support more than one port')
     }
-    this.host = new ReplayExecutionHost(this.arc, ports[0]);
+    this.host = new ReplayExecutionHost(this.arc, ports[0], new DomSlotComposer({
+      containers: {
+        root: this.element
+      }
+    }));
   }
 
   private stop() {
@@ -65,15 +86,18 @@ export class ArcReplayManager {
 }
 
 class ReplayExecutionHost extends PECOuterPort {
-  constructor(arc: Arc, port: MessagePort) {
-    super(port, arc);
-    this.inspector = null;
+
+  private slotComposer: SlotComposer;
+
+  constructor(arc: Arc, port: MessagePort, slotComposer: SlotComposer) {
+    super(port, arc, false);
+    this.slotComposer = slotComposer;
   }
 
   step(msg: DevtoolsMessage) {
     console.log('Replay step:', msg.messageBody);
 
-    this.send(msg.messageBody.name, msg.messageBody.body); 
+    void this.send(msg.messageBody.name, msg.messageBody.body); 
 
     //this.InstantiateParticle(particle, particle.id.toString(), particle.spec, stores);
     //this.DefineHandle(store, store.type.resolvedType(), name);
@@ -86,6 +110,7 @@ class ReplayExecutionHost extends PECOuterPort {
   }
 
   onRender(particle: Particle, slotName: string, content: Content) {
+    this.slotComposer.renderSlot(particle, slotName, content);
   }
 
   onInitializeProxy(handle: StorageProviderBase, callback: number) {
