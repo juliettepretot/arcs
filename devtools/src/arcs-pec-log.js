@@ -14,6 +14,8 @@ import {ObjectExplorer} from './common/object-explorer.js';
 import './common/filter-input.js';
 import {formatTime, MessengerMixin} from './arcs-shared.js';
 
+const ReplayState = {off: 0, started: 1, done: 2};
+
 class ArcsPecLog extends MessengerMixin(PolymerElement) {
   static get template() {
     return html`
@@ -107,6 +109,9 @@ class ArcsPecLog extends MessengerMixin(PolymerElement) {
       [entry][highlight] {
         background-color: #c2e7ff;
       }
+      [entry][sent] {
+        color: grey;
+      }
       [entry][received] {
         background-color: #cfffd2;
       }
@@ -118,14 +123,14 @@ class ArcsPecLog extends MessengerMixin(PolymerElement) {
         <filter-input filter="{{searchParams}}"></filter-input>
         <div divider></div>
         <iron-icon title="Rewind" icon="av:replay" on-click="rewind"></iron-icon>
-        <iron-icon title="Step" icon="av:skip-next" on-click="step" disabled$=[[!moreSteps]]></iron-icon>
+        <iron-icon title="Step" icon="av:skip-next" on-click="step" disabled$=[[!eq(replaying,1)]]></iron-icon>
         <iron-icon title="Replay" icon="av:fast-forward" disabled></iron-icon>
-        <iron-icon title="Stop" icon="av:stop" on-click="stop" disabled$=[[!replaying]]></iron-icon>
+        <iron-icon title="Stop" icon="av:stop" on-click="stop" disabled$=[[eq(replaying,0)]]></iron-icon>
       </div>
     </header>
     <iron-list id="list" items="{{filteredEntries}}">
       <template>
-        <div entry highlight$=[[eq(item.msgCount,rewindIndex)]] received$=[[item.received]]>
+        <div entry highlight$=[[eq(item.msgCount,rewindIndex)]] sent$=[[item.sent]] received$=[[item.received]]>
           <object-explorer data="[[item.explorerData]]" on-expand="_handleExpand">
             <span noPointer on-click="_blockEvent">
               <span index>[[item.msgCount]]:</span>[[item.time]]
@@ -201,7 +206,7 @@ class ArcsPecLog extends MessengerMixin(PolymerElement) {
     this.originalCallName = {}; // Callback id to original method name;
     this.highlightedGroupCallbackId = null;
     this.downloadEnabled = false;
-    this.replaying = false;
+    this.replaying = ReplayState.off;
     this.rewindIndex = -1;
   }
 
@@ -357,12 +362,9 @@ class ArcsPecLog extends MessengerMixin(PolymerElement) {
   // TODO: handle filtering; currently we assume filteredEntries is the same as entries
 
   rewind() {
-    this.replaying = true;
-    this.moreSteps = this.entries.length > 0;
+    this.replaying = this.entries.length ? ReplayState.started : ReplayState.done;
     this.rewindIndex = 0;
-    for (let i = 0; i < this.entries.length; i++) {
-      this.set(`filteredEntries.${i}.received`, false);
-    }
+    this.clearReplayState();
     this.send({
       messageType: 'replay-start',
       messageBody: {},
@@ -380,11 +382,12 @@ class ArcsPecLog extends MessengerMixin(PolymerElement) {
       },
       arcId: this.arcId
     });
+    this.set(`filteredEntries.${this.rewindIndex}.sent`, true);
 
     do {
       this.rewindIndex++;
       if (this.rewindIndex == this.entries.length) {
-        this.moreSteps = false;
+        this.replaying = ReplayState.done;
         break;
       }
     } while (!this.entries[this.rewindIndex].hostToPec);
@@ -392,7 +395,7 @@ class ArcsPecLog extends MessengerMixin(PolymerElement) {
 
   // TODO: handle unexpected received calls and missing expected calls
   receive({name, body}) {
-    body = JSON.stringify(body);  // TODO: use npm json-stable-stringify
+    body = JSON.stringify(body);  // TODO: use npm [fast-]json-stable-stringify?
     for (let i = 0; i < this.entries.length; i++) {
       const entry = this.entries[i];
       if (!entry.hostToPec && !entry.received && entry.name === name) {
@@ -406,13 +409,20 @@ class ArcsPecLog extends MessengerMixin(PolymerElement) {
   }
 
   stop() {
-    this.replaying = false;
-    this.moreSteps = false;
+    this.replaying = ReplayState.off;
     this.rewindIndex = -1;
+    this.clearReplayState();
     this.send({
       messageType: 'replay-stop',
       arcId: this.arcId
     });
+  }
+
+  clearReplayState() {
+    for (let i = 0; i < this.entries.length; i++) {
+      this.set(`filteredEntries.${i}.sent`, false);
+      this.set(`filteredEntries.${i}.received`, false);
+    }
   }
 
   eq(i1, i2) {
