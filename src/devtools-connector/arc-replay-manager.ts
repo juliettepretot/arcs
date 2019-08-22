@@ -43,6 +43,7 @@ export class ArcReplayManager {
 
   private stop() {
     console.log('Replay stopped for', this.arc.id);
+    this.host.close();
     this.element.parentElement.removeChild(this.element);
   }
 
@@ -66,19 +67,22 @@ export class ArcReplayManager {
 class ReplayExecutionHost extends PECOuterPort {
   constructor(arc: Arc, port: MessagePort) {
     super(port, arc);
+    this.inspector = null;
   }
 
   step(msg: DevtoolsMessage) {
     console.log('Replay step:', msg.messageBody);
 
-    //this.apiPort.Stop();
-    //this.apiPort.AwaitIdle(this.nextIdentifier++);
-    //this.apiPort.UIEvent(particle, slotName, event);
-    //this.apiPort.StartRender(particle, slotName, providedSlots, contentTypes);
-    //this.apiPort.StopRender(particle, slotName);
-    //this.apiPort.InnerArcRender(transformationParticle, transformationSlotName, hostedSlotId, content);
-    //this.apiPort.DefineHandle(store, store.type.resolvedType(), name);
-    //this.apiPort.InstantiateParticle(particle, particle.id.toString(), particle.spec, stores);
+    this.send(msg.messageBody.name, msg.messageBody.body); 
+
+    //this.InstantiateParticle(particle, particle.id.toString(), particle.spec, stores);
+    //this.DefineHandle(store, store.type.resolvedType(), name);
+    //this.UIEvent(particle, slotName, event);
+    //this.StartRender(particle, slotName, providedSlots, contentTypes);
+    //this.StopRender(particle, slotName);
+    //this.InnerArcRender(transformationParticle, transformationSlotName, hostedSlotId, content);
+    //this.AwaitIdle(this.nextIdentifier++);
+    //this.Stop();
   }
 
   onRender(particle: Particle, slotName: string, content: Content) {
