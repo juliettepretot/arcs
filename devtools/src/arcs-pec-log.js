@@ -231,6 +231,7 @@ class ArcsPecLog extends MessengerMixin(PolymerElement) {
 
   newEntry(msg) {
     let name = msg.name;
+    const originalName = name;
     let icon = null;
     const isCallback = name.endsWith('Callback');
 
@@ -274,6 +275,7 @@ class ArcsPecLog extends MessengerMixin(PolymerElement) {
       icon,
       hostToPec,
       name,
+      originalName,
       pecMsgBody: msg.pecMsgBody,
       explorerData,
       stack,
@@ -362,7 +364,7 @@ class ArcsPecLog extends MessengerMixin(PolymerElement) {
     this.send({
       messageType: 'replay-step',
       messageBody: {
-        name: entry.name,
+        name: entry.originalName,
         body: entry.pecMsgBody
       },
       arcId: this.arcId
