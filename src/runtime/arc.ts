@@ -102,7 +102,6 @@ export class Arc {
 
 constructor({id, context, pecFactories, slotComposer, loader, storageKey, storageProviderFactory, speculative, innerArc, stub, inspectorFactory} : ArcOptions) {
     // TODO: context should not be optional.
-    console.log(new Error().stack);
     this._context = context || new Manifest({id});
     // TODO: pecFactories should not be optional. update all callers and fix here.
     this.pecFactories = pecFactories && pecFactories.length > 0 ? pecFactories.slice() : [FakePecFactory(loader).bind(null)];

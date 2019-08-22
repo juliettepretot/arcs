@@ -21,6 +21,7 @@ import {Type} from '../runtime/type.js';
 export class ArcReplayManager {
   private arc: Arc;
   private host: ReplayExecutionHost;
+  private element: HTMLDivElement;
   
   constructor(arc: Arc, arcDevtoolsChannel: ArcDevtoolsChannel) {
     this.arc = arc;
@@ -31,6 +32,7 @@ export class ArcReplayManager {
 
   private start() {
     console.log('Replay invoked for', this.arc.id);
+    this.element = this.createRenderingSurface();
 
     const ports = this.arc.createPorts(this.arc.id);
     if (ports.length !== 1) {
@@ -41,6 +43,23 @@ export class ArcReplayManager {
 
   private stop() {
     console.log('Replay stopped for', this.arc.id);
+    this.element.parentElement.removeChild(this.element);
+  }
+
+  private createRenderingSurface(): HTMLDivElement {
+    const div = document.createElement('div');
+    document.body.appendChild(div);
+    div.style.cssText = `
+      position: absolute;
+      top: 24px;
+      left: 24px;
+      right: 24px;
+      bottom: 24px;
+      border: 1px solid rgba(0,0,0,.3);
+      z-index: 10;
+      background: white;
+      box-shadow: 0 0 10px rgba(0,0,0,.5);`;
+    return div;
   }
 }
 
