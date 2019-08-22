@@ -37,7 +37,7 @@ const DomSlotComposer = class extends SlotComposer {
 export class ArcReplayManager {
   private arc: Arc;
   private host: ReplayExecutionHost;
-  private element: HTMLDivElement;
+  private element: HTMLElement;
   
   constructor(arc: Arc, arcDevtoolsChannel: ArcDevtoolsChannel) {
     this.arc = arc;
@@ -48,7 +48,8 @@ export class ArcReplayManager {
 
   private async start() {
     console.log('Replay invoked for', this.arc.id);
-    this.element = this.createRenderingSurface();
+    const elems = this.createRenderingSurface();
+    this.element = elems.outer;
 
     const ports = this.arc.createPorts(this.arc.id);
     if (ports.length !== 1) {
@@ -57,7 +58,7 @@ export class ArcReplayManager {
 
     const slotComposer = new DomSlotComposer({
       containers: {
-        root: this.element
+        root: elems.inner
       }
     });
     await slotComposer.initializeRecipe(this.arc, this.arc.activeRecipe.particles);
@@ -70,20 +71,33 @@ export class ArcReplayManager {
     this.element.parentElement.removeChild(this.element);
   }
 
-  private createRenderingSurface(): HTMLDivElement {
-    const div = document.createElement('div');
-    document.body.appendChild(div);
-    div.style.cssText = `
+  private createRenderingSurface(): {outer: HTMLElement, inner: HTMLElement} {
+    const outer = document.createElement('div');
+    outer.style.cssText = `
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      z-index: 10001;
+      background: rgba(0,0,0,.5);`;
+
+    const inner = document.createElement('div');
+    inner.style.cssText = `
       position: absolute;
       top: 24px;
       left: 24px;
       right: 24px;
       bottom: 24px;
       border: 1px solid rgba(0,0,0,.3);
-      z-index: 10;
+      z-index: 10002;
       background: white;
       box-shadow: 0 0 10px rgba(0,0,0,.5);`;
-    return div;
+
+    outer.appendChild(inner);
+
+    document.body.appendChild(outer);
+    return {outer, inner};
   }
 }
 
