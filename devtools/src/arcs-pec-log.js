@@ -356,10 +356,13 @@ class ArcsPecLog extends MessengerMixin(PolymerElement) {
   step() {
     if (this.rewindIndex >= this.entries.lenght) return;
     this.rewindIndex++;
-    console.log(this.entries[this.rewindIndex]);
+    const entry = this.entries[this.rewindIndex];
     this.send({
       messageType: 'replay-step',
-      messageBody: this.entries[this.rewindIndex].pecMsgBody,
+      messageBody: {
+        name: entry.name,
+        body: entry.pecMsgBody
+      },
       arcId: this.arcId
     });
   }
