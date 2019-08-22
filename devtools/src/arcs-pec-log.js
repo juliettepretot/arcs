@@ -339,7 +339,7 @@ class ArcsPecLog extends MessengerMixin(PolymerElement) {
 
   rewind() {
     this.send({
-      messageType: 'rewind',
+      messageType: 'arc-replay',
       messageBody: {},
       arcId: this.arcId,
     });
