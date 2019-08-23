@@ -16,8 +16,13 @@ defineParticle(({UiParticle}) => {
         render({cat}) {
             return {
                 modality: 'notification',
-                text: 'Today\'s Cat is ' + cat.name
+                text: 'Today\'s Cat is ' + cat.name,
+                onclick: 'onNotificationClick',
             };
+        }
+        onNotificationClick() {
+            const triggered = this.handles.get('notification');
+            notification.set({triggered: true});
         }
     };
 

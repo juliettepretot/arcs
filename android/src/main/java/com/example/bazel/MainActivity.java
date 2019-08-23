@@ -95,8 +95,7 @@ public class MainActivity extends Activity {
     logger.info("Java received message: " + message);
     switch (message) {
       case "ready":
-        sendToShell("{\"message\": \"spawn\", \"recipe\": \"Notification\"}");
-        sendToShell("{\"message\": \"spawn\", \"recipe\": \"Restaurants\"}");
+        sendToShell("{\"message\": \"spawn\", \"recipe\": \"CatOfTheDay\"}");
         break;
       case "slot":
         if (obj.isNull("content")) {

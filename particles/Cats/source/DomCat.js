@@ -10,12 +10,17 @@
 
 defineParticle(({DomParticle, html, resolver}) => {
     return class extends DomParticle {
-
-        async update({today, allCats}) {
-            if (today) {
-                const cat = this.handles.get('cat');
-                cat.set(new cat.entityClass(allCats[Math.floor(Math.random()*31)]));
+        get template() {
+            if(this.handles.get('notification').triggered) {
+                return html`Today's cat is <span>{{name}}</span>! This cat is: <span>{{description}}</span>!`;
+            } 
+            return html``;
+        }
+        update({cat, notification}) {
+            if (notification.triggered) {
+                return {name: cat.name, description: cat.description};
             }
         }
+
     };
 });
