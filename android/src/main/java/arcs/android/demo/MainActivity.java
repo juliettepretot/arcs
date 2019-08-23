@@ -32,12 +32,13 @@ public class MainActivity extends Activity {
 
   private static final String SHELL_JS_URL =
           USE_DEVSERVER
-                  ? "file:///android_asset/pipes_shell_dist/index.html?log"
-                  : "http://10.0.2.2:8786/shells/pipes-shell/web/index.html?log";
+                  ? "http://10.0.2.2:8786/shells/pipes-shell/web/index.html?log"
+                  : "file:///android_asset/pipes_shell_dist/index.html?log";
+                  
   private static final String SHELL_SURFACE_URL =
           USE_DEVSERVER
-                  ? "file:///android_asset/pipes_surface_dist/surface.html"
-                  : "http://10.0.2.2:8786/shells/pipes-shell/surface/surface.html";
+                  ? "http://10.0.2.2:8786/shells/pipes-shell/surface/surface.html"
+                  : "file:///android_asset/pipes_surface_dist/surface.html";
 
   private static final Logger logger = Logger.getLogger(MainActivity.class.getName());
   private static final String CHANNEL_ID = "arcs_channel_id";
