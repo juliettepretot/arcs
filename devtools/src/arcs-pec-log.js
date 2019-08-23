@@ -413,8 +413,6 @@ class ArcsPecLog extends MessengerMixin(PolymerElement) {
     } while (!this.entries[this.rewindIndex].hostToPec);
   }
 
-  // TODO: repeated clicks on the run button speed it up as a side-effect of launching
-  // this spin loop multiple times. Consider making it smarter with a decrementing delay?
   run(event) {
     // Clicking 'run' toggles the running state.
     if (event) {
@@ -428,7 +426,6 @@ class ArcsPecLog extends MessengerMixin(PolymerElement) {
     }
   }
 
-  // TODO: make breakpoints work on received messages
   _toggleBreak(event) {
     if (this.replaying !== ReplayState.off) {
       this.set(`filteredEntries.${event.model.index}.breakpoint`, !event.model.item.breakpoint);
