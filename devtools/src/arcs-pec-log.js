@@ -102,6 +102,12 @@ class ArcsPecLog extends MessengerMixin(PolymerElement) {
       [index] {
         margin: 0 1ch;
         color: var(--devtools-blue);
+        padding-left: 3px;
+        border-radius: 7px;
+      }
+      [index][breakpoint] {
+        color: white;
+        background-color: #ff6969;
       }
       object-explorer {
         margin: 2px;
@@ -139,7 +145,7 @@ class ArcsPecLog extends MessengerMixin(PolymerElement) {
         <div entry highlight$=[[eq(item.msgCount,rewindIndex)]] sent$=[[item.sent]] received$=[[item.received]]>
           <object-explorer data="[[item.explorerData]]" on-expand="_handleExpand">
             <span noPointer on-click="_blockEvent">
-              <span index>[[item.msgCount]]:</span>[[item.time]]
+              <span index on-click="_toggleBreak" breakpoint$=[[item.breakpoint]]>[[item.msgCount]]:</span>[[item.time]]
               <span stack class$="[[item.stack.iconClass]]" on-click="_toggleStack">
                 <iron-icon icon="menu"></iron-icon>
               </span>
@@ -298,7 +304,8 @@ class ArcsPecLog extends MessengerMixin(PolymerElement) {
       stack,
       msgCount: msg.pecMsgCount,
       time: formatTime(msg.timestamp, 3),
-      highlight: msg.pecMsgBody.callback === this.highlightedGroupCallbackId
+      highlight: msg.pecMsgBody.callback === this.highlightedGroupCallbackId,
+      breakpoint: false
     };
   }
 
@@ -370,14 +377,14 @@ class ArcsPecLog extends MessengerMixin(PolymerElement) {
   rewind() {
     this.replaying = this.entries.length ? ReplayState.started : ReplayState.done;
     this.rewindIndex = 0;
-    this.clearReplayState();
+    this.clearReplayState(false);
     this.send({
       messageType: 'replay-start',
       messageBody: {},
       arcId: this.arcId,
     });
   }
-  
+
   step() {
     const entry = this.entries[this.rewindIndex];
     this.send({
@@ -399,11 +406,21 @@ class ArcsPecLog extends MessengerMixin(PolymerElement) {
     } while (!this.entries[this.rewindIndex].hostToPec);
   }
 
-  run() {
-    if (this.replaying === ReplayState.started) {
-      this.step();
-      setTimeout(() => this.run(), 500);
+  // TODO: repeated clicks on the run button speed it up as a side-effect of launching
+  // this spin loop multiple times. Consider making it smarter with a decrementing delay?
+  run(event) {
+    this.step();
+    if (this.replaying === ReplayState.started && !this.entries[this.rewindIndex].breakpoint) {
+      setTimeout(() => this.run(null), 500);
     }
+  }
+
+  // TODO: make breakpoints work on received messages
+  _toggleBreak(event) {
+    if (this.replaying !== ReplayState.off) {
+      this.set(`filteredEntries.${event.model.index}.breakpoint`, !event.model.item.breakpoint);
+    }
+    event.stopPropagation();
   }
 
   // TODO: handle unexpected received calls and missing expected calls
@@ -423,17 +440,20 @@ class ArcsPecLog extends MessengerMixin(PolymerElement) {
   stop() {
     this.replaying = ReplayState.off;
     this.rewindIndex = -1;
-    this.clearReplayState();
+    this.clearReplayState(true);
     this.send({
       messageType: 'replay-stop',
       arcId: this.arcId
     });
   }
 
-  clearReplayState() {
+  clearReplayState(includeBreaks) {
     for (let i = 0; i < this.entries.length; i++) {
       this.set(`filteredEntries.${i}.sent`, false);
       this.set(`filteredEntries.${i}.received`, false);
+      if (includeBreaks) {
+        this.set(`filteredEntries.${i}.breakpoint`, false);
+      }
     }
   }
 
@@ -449,9 +469,9 @@ class ArcsPecLog extends MessengerMixin(PolymerElement) {
       if (Object.keys(x).length != Object.keys(y).length) {
         return false;
       }
-  
+
       for (const prop in x) {
-        if (y.hasOwnProperty(prop)) {  
+        if (y.hasOwnProperty(prop)) {
           if (!this.deepEqual(x[prop], y[prop])) {
             return false;
           }
