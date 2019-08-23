@@ -91,7 +91,6 @@ public class MainActivity extends Activity {
   @Override
   protected void onNewIntent(Intent intent) {
     super.onNewIntent(intent);
-
     if (intent.getAction() == null) {
       return;
     } else if (intent.getAction().equals(ACTION_HANDLE_NOTIFICATION)) {
@@ -100,9 +99,13 @@ public class MainActivity extends Activity {
   }
 
   private void handleNotificationTap(String payload) {
-    showToast("Notification tapped!");
-    logger.info("Payload stored in notification: " + payload);
-    // TODO: Forward the payload back to the shell.
+    if (payload.contains("dinner")) {
+      spawn("Restaurants");
+    } else {
+      //showToast("Notification tapped!");
+      logger.info("Payload stored in notification: [" + payload + "]");
+      sendToShell(payload);
+    }
   }
 
   @SuppressLint("SetJavaScriptEnabled")
@@ -143,7 +146,6 @@ public class MainActivity extends Activity {
     switch (message) {
       case "ready":
         spawn("Notification");
-        spawn("Restaurants");
         spawn("CatOfTheDay");
         break;
       case "slot":
@@ -171,23 +173,42 @@ public class MainActivity extends Activity {
         break;
 
       case "notification":
-        String text = model.getString("text");
-        showNotification(text);
+        String payload = "";
+        JSONObject particle = content.optJSONObject("particle");
+        if (particle != null) {
+          String pid = particle.optString("id", "");
+          String handler = model.optString("onclick", "");
+          String value = model.optString("text", "");
+          payload = "{"
+              + "\"message\": \"event\", "
+              + "\"tid\": \"" + Integer.toString(tid) + "\", "
+              + "\"pid\": \"" + pid + "\", "
+              + "\"eventlet\": {"
+                + "\"handler\": \"" + handler + "\", "
+                + "\"data\": {"
+                   + "\"value\": \"" + value + "\""
+                + "}"
+              + "}"
+          + "}";
+          logger.info("Payload constructed: [" + payload + "]");
+        }
+        String text = model.optString("text", "");
+        showNotification(text, payload);
         break;
 
       default:
-        // TODO(sjmiles): handle unknown modalities gracefully (it's not exceptional)
+        // TODO(sjmiles): handle unknown modalities gracefully (it's not exceptional, should log tho)
         //throw new AssertionError("Unhandled modality: " + modality);
         break;
     }
   }
 
-  private void showNotification(String title) {
+  private void showNotification(String title, String payload) {
     int notificationId = this.notificationId++;
     Intent intent = new Intent(this, MainActivity.class)
             .setAction(ACTION_HANDLE_NOTIFICATION)
             .setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP)
-            .putExtra(EXTRA_NOTIFICATION_SHELL_COMMAND, "PAYLOAD_GOES_HERE");
+            .putExtra(EXTRA_NOTIFICATION_SHELL_COMMAND, payload);
     PendingIntent pendingIntent = PendingIntent.getActivity(this, notificationId, intent, PendingIntent.FLAG_ONE_SHOT);
     Notification notification = new Notification.Builder(this, CHANNEL_ID)
             .setContentTitle(title)

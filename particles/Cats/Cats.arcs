@@ -8,10 +8,6 @@ schema Notification
 schema Date
     Number day
 
-particle DomCat in './source/DomCat.js'
-    in Cat cat
-    in Notification notification
-
 particle TodaysCat in './source/TodaysCat.js'
     in Date today
     in [Cat] allCats
@@ -19,7 +15,6 @@ particle TodaysCat in './source/TodaysCat.js'
 
 particle ShowCat in './source/ShowCat.js'
     in Cat cat
-    out Notification notification
     consume root
 
 particle Today in './source/Today.js'
@@ -39,8 +34,4 @@ recipe CatOfTheDay
         today = today
     ShowCat
         cat = cat
-        notification = notification
-    DomCat
-        cat = cat
-        notification = notification
     description `Get the cat of the day`

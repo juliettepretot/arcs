@@ -12,23 +12,40 @@
 
 /* global defineParticle */
 
-defineParticle(({UiParticle, log}) => {
+defineParticle(({UiParticle, html, log}) => {
+
+const template = html`
+<div hidden="{{hidden}}">Today's cat is <span>{{name}}</span>! This cat is: <span>{{description}}</span>!</div>
+`;
 
   return class extends UiParticle {
-    render({cat}) {
+    get template() {
+      return template;
+    }
+    render({cat}, {show}) {
       if (cat) {
         log(cat);
         return {
-          modality: 'notification',
-          text: `Today's Cat is ${cat.name}`,
-          onclick: 'onCatClick'
+          hidden: !show,
+          name: cat.name,
+          description: cat.description
         };
       }
     }
+    renderModel(model) {
+      if (!this.state.notified) {
+        super.renderModel({
+          modality: 'notification',
+          text: `Today's Cat is ${model.name}`,
+          onclick: 'onCatClick'
+        });
+        this.state = {notified: true};
+      }
+      super.renderModel(model);
+    }
     onCatClick(e) {
       log('onCatClick: ', e);
-      const notification = this.handles.get('notification');
-      notification.set({triggered: true});
+      this.state = {show: true};
     }
   };
 
