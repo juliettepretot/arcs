@@ -8,23 +8,29 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
- 'use strict';
+'use strict';
 
-defineParticle(({UiParticle}) => {
+/* global defineParticle */
 
-    return class extends UiParticle {
-        render({cat}) {
-            return {
-                modality: 'notification',
-                text: 'Today\'s Cat is ' + cat.name,
-                onclick: 'onNotificationClick',
-            };
-        }
-        onNotificationClick() {
-            const triggered = this.handles.get('notification');
-            notification.set({triggered: true});
-        }
-    };
+defineParticle(({UiParticle, log}) => {
+
+  return class extends UiParticle {
+    render({cat}) {
+      if (cat) {
+        log(cat);
+        return {
+          modality: 'notification',
+          text: `Today's Cat is ${cat.name}`,
+          onclick: 'onCatClick'
+        };
+      }
+    }
+    onCatClick(e) {
+      log('onCatClick: ', e);
+      const notification = this.handles.get('notification');
+      notification.set({triggered: true});
+    }
+  };
 
 });
 

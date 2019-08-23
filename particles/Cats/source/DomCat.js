@@ -11,14 +11,19 @@
 defineParticle(({DomParticle, html, resolver}) => {
     return class extends DomParticle {
         get template() {
-            if(this.handles.get('notification').triggered) {
-                return html`Today's cat is <span>{{name}}</span>! This cat is: <span>{{description}}</span>!`;
+            const notification = this.handles.get('notification');
+            if (notification) {
+                if (notification.triggered) {
+                    return html`Today's cat is <span>{{name}}</span>! This cat is: <span>{{description}}</span>!`;
+                }
             } 
             return html``;
         }
         update({cat, notification}) {
-            if (notification.triggered) {
-                return {name: cat.name, description: cat.description};
+            if (notification) {
+                if (notification.triggered) {
+                    return {name: cat.name, description: cat.description};
+                }
             }
         }
 
