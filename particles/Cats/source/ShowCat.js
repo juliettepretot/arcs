@@ -26,7 +26,7 @@ defineParticle(({UiParticle, log}) => {
       }
     }
     onCatClick(e) {
-      log('yeah baby, yeah');
+      log('onCatClick: ', e);
     }
   };
 
