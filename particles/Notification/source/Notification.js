@@ -16,7 +16,8 @@ defineParticle(({UiParticle}) => {
     render(props, state) {
       return {
         modality: 'notification',
-        text: `Don't forget dinner reservations.`
+        text: `Don't forget dinner reservations.`,
+        spawn: 'Restaurants',
       };
     }
   };

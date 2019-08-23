@@ -46,6 +46,7 @@ public class MainActivity extends Activity {
   private static final String CHANNEL_ID = "arcs_channel_id";
   private static final String ACTION_HANDLE_NOTIFICATION = "action_handle_notification";
   private static final String EXTRA_NOTIFICATION_SHELL_COMMAND = "extra_notification_shell_command";
+  private static final String EXTRA_NOTIFICATION_SPAWN_RECIPE = "extra_notification_spawn_recipe";
 
   private WebView shellWebView;
   private WebView renderingWebView;
@@ -99,18 +100,19 @@ public class MainActivity extends Activity {
     if (intent.getAction() == null) {
       return;
     } else if (intent.getAction().equals(ACTION_HANDLE_NOTIFICATION)) {
-      handleNotificationTap(intent.getStringExtra(EXTRA_NOTIFICATION_SHELL_COMMAND));
+      String recipeToSpawn = intent.getStringExtra(EXTRA_NOTIFICATION_SPAWN_RECIPE);
+      if (recipeToSpawn != null) {
+        spawn(recipeToSpawn);
+      } else {
+        handleNotificationTapShellCommand(intent.getStringExtra(EXTRA_NOTIFICATION_SHELL_COMMAND));
+      }
     }
   }
 
-  private void handleNotificationTap(String payload) {
-    if (payload.contains("dinner")) {
-      spawn("Restaurants");
-    } else {
-      //showToast("Notification tapped!");
-      logger.info("Payload stored in notification: [" + payload + "]");
-      sendToShell(payload);
-    }
+  private void handleNotificationTapShellCommand(String payload) {
+    //showToast("Notification tapped!");
+    logger.info("Payload stored in notification: [" + payload + "]");
+    sendToShell(payload);
   }
 
   @SuppressLint("SetJavaScriptEnabled")
@@ -178,27 +180,34 @@ public class MainActivity extends Activity {
         break;
 
       case "notification":
-        String payload = "";
+        String shellCommandPayload = "";
+        String recipeToSpawn = null;
         JSONObject particle = content.optJSONObject("particle");
         if (particle != null) {
-          String pid = particle.optString("id", "");
-          String handler = model.optString("onclick", "");
-          String value = model.optString("text", "");
-          payload = "{"
-              + "\"message\": \"event\", "
-              + "\"tid\": \"" + Integer.toString(tid) + "\", "
-              + "\"pid\": \"" + pid + "\", "
-              + "\"eventlet\": {"
-                + "\"handler\": \"" + handler + "\", "
-                + "\"data\": {"
-                   + "\"value\": \"" + value + "\""
-                + "}"
-              + "}"
-          + "}";
-          logger.info("Payload constructed: [" + payload + "]");
+          if (model.has("onclick")) {
+            // Construct a shell command payload.
+            String pid = particle.optString("id", "");
+            String handler = model.optString("onclick", "");
+            String value = model.optString("text", "");
+            shellCommandPayload = "{"
+                    + "\"message\": \"event\", "
+                    + "\"tid\": \"" + Integer.toString(tid) + "\", "
+                    + "\"pid\": \"" + pid + "\", "
+                    + "\"eventlet\": {"
+                    + "\"handler\": \"" + handler + "\", "
+                    + "\"data\": {"
+                    + "\"value\": \"" + value + "\""
+                    + "}"
+                    + "}"
+                    + "}";
+            logger.info("Shell command payload constructed: [" + shellCommandPayload + "]");
+          } else if (model.has("spawn")) {
+            recipeToSpawn = model.getString("spawn");
+            logger.info("Recipe to spawn when notification tapped: " + recipeToSpawn);
+          }
         }
         String text = model.optString("text", "");
-        showNotification(text, payload);
+        showNotification(text, shellCommandPayload, recipeToSpawn);
         break;
 
       default:
@@ -208,12 +217,18 @@ public class MainActivity extends Activity {
     }
   }
 
-  private void showNotification(String title, String payload) {
+  private void showNotification(String title, String shellCommandPayload, String recipeToSpawn) {
     int notificationId = this.notificationId++;
     Intent intent = new Intent(this, MainActivity.class)
             .setAction(ACTION_HANDLE_NOTIFICATION)
-            .setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP)
-            .putExtra(EXTRA_NOTIFICATION_SHELL_COMMAND, payload);
+            .setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
+
+    if (recipeToSpawn != null) {
+      intent.putExtra(EXTRA_NOTIFICATION_SPAWN_RECIPE, recipeToSpawn);
+    } else {
+      intent.putExtra(EXTRA_NOTIFICATION_SHELL_COMMAND, shellCommandPayload);
+    }
+
     PendingIntent pendingIntent = PendingIntent.getActivity(this, notificationId, intent, PendingIntent.FLAG_ONE_SHOT);
     Notification notification = new Notification.Builder(this, CHANNEL_ID)
             .setContentTitle(title)
