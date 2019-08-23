@@ -419,9 +419,19 @@ class ArcsPecLog extends MessengerMixin(PolymerElement) {
       this.replaying = (this.replaying === ReplayState.run) ? ReplayState.step : ReplayState.run;
     }
     if (this.replaying === ReplayState.run) {
+      const prevIndex = this.rewindIndex;
       this.step();
       if (this.replaying !== ReplayState.done && !this.entries[this.rewindIndex].breakpoint) {
-        setTimeout(() => this.run(null), 300);
+        let timeout = 10;
+        // Check whether there are any not yet received messages in between.
+        for (let i = prevIndex + 1; i < this.rewindIndex; i++) {
+          const e = this.entries[i];
+          if (!e.hostToPec && !e.received && e.name !== 'Render') {
+            timeout = 200;
+            break;
+          }
+        }
+        setTimeout(() => this.run(null), timeout);
       }
     }
   }
