@@ -5,6 +5,8 @@ import android.app.Activity;
 import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
+import android.app.PendingIntent;
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.webkit.JavascriptInterface;
@@ -19,6 +21,7 @@ import android.widget.Toast;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.util.Objects;
 import java.util.logging.Logger;
 
 /**
@@ -28,6 +31,8 @@ public class MainActivity extends Activity {
 
   private static final Logger logger = Logger.getLogger(MainActivity.class.getName());
   private static final String CHANNEL_ID = "arcs_channel_id";
+  private static final String ACTION_HANDLE_NOTIFICATION = "action_handle_notification";
+  private static final String EXTRA_NOTIFICATION_SHELL_COMMAND = "extra_notification_shell_command";
 
   private WebView shellWebView;
   private WebView renderingWebView;
@@ -72,6 +77,23 @@ public class MainActivity extends Activity {
     setContentView(layout);
   }
 
+  @Override
+  protected void onNewIntent(Intent intent) {
+    super.onNewIntent(intent);
+
+    if (intent.getAction() == null) {
+      return;
+    } else if (intent.getAction().equals(ACTION_HANDLE_NOTIFICATION)) {
+      handleNotificationTap(intent.getStringExtra(EXTRA_NOTIFICATION_SHELL_COMMAND));
+    }
+  }
+
+  private void handleNotificationTap(String payload) {
+    showToast("Notification tapped!");
+    logger.info("Payload stored in notification: " + payload);
+    // TODO: Forward the payload back to the shell.
+  }
+
   @SuppressLint("SetJavaScriptEnabled")
   private void setWebviewSettings(WebSettings settings) {
     settings.setDatabaseEnabled(true);
@@ -104,9 +126,9 @@ public class MainActivity extends Activity {
     logger.info("Java received message: " + message);
     switch (message) {
       case "ready":
-//        sendToShell("{\"message\": \"spawn\", \"recipe\": \"Notification\"}");
+        sendToShell("{\"message\": \"spawn\", \"recipe\": \"Notification\"}");
 //        sendToShell("{\"message\": \"spawn\", \"recipe\": \"Restaurants\"}");
-        sendToShell("{\"message\": \"spawn\", \"recipe\": \"CatOfTheDay\"}");
+//        sendToShell("{\"message\": \"spawn\", \"recipe\": \"CatOfTheDay\"}");
         break;
       case "slot":
         if (obj.isNull("content")) {
@@ -144,13 +166,19 @@ public class MainActivity extends Activity {
   }
 
   private void showNotification(String title) {
+    int notificationId = this.notificationId++;
+    Intent intent = new Intent(this, MainActivity.class)
+            .setAction(ACTION_HANDLE_NOTIFICATION)
+            .setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP)
+            .putExtra(EXTRA_NOTIFICATION_SHELL_COMMAND, "PAYLOAD_GOES_HERE");
+    PendingIntent pendingIntent = PendingIntent.getActivity(this, notificationId, intent, PendingIntent.FLAG_ONE_SHOT);
     Notification notification = new Notification.Builder(this, CHANNEL_ID)
             .setContentTitle(title)
-//            .setContentText(subject)
             .setSmallIcon(R.drawable.baseline_sms_black_24)
-//            .setLargeIcon(aBitmap)
+            .setContentIntent(pendingIntent)
+            .setAutoCancel(true)
             .build();
-    notificationManager.notify(notificationId++, notification);
+    notificationManager.notify(notificationId, notification);
   }
 
   /** Show a toast from the web page */
