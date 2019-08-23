@@ -24,7 +24,8 @@ export const connectToPlatform = async Application => {
       delegate(packet);
     }
   };
-  setTimeout(() => arcsProcess.startTheShell(), 2000);
+  // TODO(sjmiles): not good
+  setTimeout(() => arcsProcess.startTheShell(), 4000);
   // bus packet handlers
   const dispatcher = {
     ready(packet) {
@@ -119,10 +120,12 @@ const dom = (tag, container, props) => {
 
 const toastContainer = dom('div', document.body, {style: 'position: fixed; bottom: 0; right: 0; width: 300px;'});
 
-export const addToast = msg => {
+export const addToast = packet => {
+  const msg = packet.content.model.text;
   if (!toasts.some(toast => toast.msg === msg)) {
     const toast = {
-      msg
+      msg,
+      packet
     };
     // never more than 3
     toasts = toasts.slice(0, 2);
@@ -135,12 +138,12 @@ const renderToasts = () => {
   const html = [];
   toastContainer.innerText = '';
   toasts.forEach((toast, i) => {
-    toast = dom('toast', toastContainer, {
+    const toastDom = dom('toast', toastContainer, {
       innerHTML: toast.msg,
       style: 'display: block; cursor: pointer; opacity: 1; margin: 32px; background: lightgreen; padding: 16px; transition: all 200ms ease-in;',
       onclick: () => {
         toasts.splice(i, 1);
-        toast.style.opacity = 0;
+        toastDom.style.opacity = 0;
         if (renderToasts.onclick) {
           renderToasts.onclick(toast);
         }
