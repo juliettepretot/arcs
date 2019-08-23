@@ -56,20 +56,16 @@ export class UiSimpleParticle extends Particle {
 
   renderOutput(...args): void {
     const renderModel = this.render(...args);
-    if (renderModel) {
-      this.renderModel(renderModel);
-    }
+    this.renderModel(renderModel);
   }
 
   // This is the default output 'packet', other implementations (modalities) could
   // output other things, or choose different output packets based on hints from 'model'
   renderModel(model) {
-    if (model) {
-      this.output({
-        template: this.template,
-        model
-      });
-    }
+    this.output({
+      template: this.template,
+      model: model || {}
+    });
   }
 
   /**
