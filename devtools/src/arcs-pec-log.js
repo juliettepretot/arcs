@@ -14,7 +14,7 @@ import {ObjectExplorer} from './common/object-explorer.js';
 import './common/filter-input.js';
 import {formatTime, MessengerMixin} from './arcs-shared.js';
 
-const ReplayState = {off: 0, started: 1, done: 2};
+const ReplayState = {off: 0, step: 1, run: 2, done: 3};
 
 class ArcsPecLog extends MessengerMixin(PolymerElement) {
   static get template() {
@@ -126,6 +126,7 @@ class ArcsPecLog extends MessengerMixin(PolymerElement) {
       }
       iron-icon[disabled] {
         cursor: default;
+        pointer-events: none;
       }
     </style>
     <header class="header">
@@ -135,9 +136,9 @@ class ArcsPecLog extends MessengerMixin(PolymerElement) {
         <filter-input filter="{{searchParams}}"></filter-input>
         <div divider></div>
         <iron-icon title="Rewind" icon="av:replay" on-click="rewind"></iron-icon>
-        <iron-icon title="Step" icon="av:skip-next" on-click="step" disabled$=[[!eq(replaying,1)]]></iron-icon>
-        <iron-icon title="Replay" icon="av:fast-forward" on-click="run" disabled$=[[!eq(replaying,1)]]></iron-icon>
-        <iron-icon title="Stop" icon="av:stop" on-click="stop" disabled$=[[eq(replaying,0)]]></iron-icon>
+        <iron-icon title="Step" icon="av:skip-next" on-click="step" disabled$=[[goDisabled(replaying)]]></iron-icon>
+        <iron-icon title="Replay" icon="av:fast-forward" on-click="run" disabled$=[[goDisabled(replaying)]]></iron-icon>
+        <iron-icon title="Stop" icon="av:stop" on-click="stop" disabled$=[[stopDisabled(replaying)]]></iron-icon>
       </div>
     </header>
     <iron-list id="list" items="{{filteredEntries}}">
@@ -375,7 +376,7 @@ class ArcsPecLog extends MessengerMixin(PolymerElement) {
   // TODO: handle filtering; currently we assume filteredEntries is the same as entries
 
   rewind() {
-    this.replaying = this.entries.length ? ReplayState.started : ReplayState.done;
+    this.replaying = this.entries.length ? ReplayState.step : ReplayState.done;
     this.rewindIndex = 0;
     this.clearReplayState(false);
     this.send({
@@ -385,7 +386,13 @@ class ArcsPecLog extends MessengerMixin(PolymerElement) {
     });
   }
 
-  step() {
+  step(event) {
+    // Clicking 'step' while running stops it.
+    if (event && this.replaying === ReplayState.run) {
+      this.replaying = ReplayState.step;
+      return;
+    }
+
     const entry = this.entries[this.rewindIndex];
     this.send({
       messageType: 'replay-step',
@@ -409,9 +416,15 @@ class ArcsPecLog extends MessengerMixin(PolymerElement) {
   // TODO: repeated clicks on the run button speed it up as a side-effect of launching
   // this spin loop multiple times. Consider making it smarter with a decrementing delay?
   run(event) {
-    this.step();
-    if (this.replaying === ReplayState.started && !this.entries[this.rewindIndex].breakpoint) {
-      setTimeout(() => this.run(null), 500);
+    // Clicking 'run' toggles the running state.
+    if (event) {
+      this.replaying = (this.replaying === ReplayState.run) ? ReplayState.step : ReplayState.run;
+    }
+    if (this.replaying === ReplayState.run) {
+      this.step();
+      if (this.replaying !== ReplayState.done && !this.entries[this.rewindIndex].breakpoint) {
+        setTimeout(() => this.run(null), 300);
+      }
     }
   }
 
@@ -430,6 +443,9 @@ class ArcsPecLog extends MessengerMixin(PolymerElement) {
       if (!entry.hostToPec && !entry.received && entry.name === name) {
         if (this.deepEqual(entry.pecMsgBody, body)) {
           this.set(`filteredEntries.${i}.received`, true);
+          if (entry.breakpoint && this.replaying === ReplayState.run) {
+            this.replaying = ReplayState.step;
+          }
           return;
         }
       }
@@ -459,6 +475,14 @@ class ArcsPecLog extends MessengerMixin(PolymerElement) {
 
   eq(i1, i2) {
     return i1 === i2;
+  }
+
+  goDisabled(replaying) {
+    return replaying != ReplayState.step && replaying != ReplayState.run;
+  }
+
+  stopDisabled(replaying) {
+    return replaying == ReplayState.off;
   }
 
   deepEqual(x, y) {
