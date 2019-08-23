@@ -8,13 +8,14 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-defineParticle(({DomParticle, html, resolver}) => {
-    return class extends DomParticle {
+ /* global defineParticle */
 
-        update(props, state) {
-            const today = this.handles.get('today');
-            today.set(new today.entityClass({day: new Date().getDate()}));
-        }
+defineParticle(({UiParticle}) => {
+  return class extends UiParticle {
 
-    };
+    update(props, state) {
+      this.updateSingleton('today', {day: new Date().getDate()});
+    }
+
+  };
 });

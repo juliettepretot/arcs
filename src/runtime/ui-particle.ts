@@ -50,7 +50,7 @@ export class UiParticle extends XenStateMixin(UiSimpleParticle) {
    * Override to return a dictionary to map into the template.
    */
   render(...args): RenderModel {
-    return {};
+    return null;
   }
 
   /**

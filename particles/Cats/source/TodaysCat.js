@@ -8,15 +8,18 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-defineParticle(({DomParticle, html, resolver}) => {
-    return class extends DomParticle {
+/* global defineParticle */
 
-        async update({today, allCats}) {
-            if (today) {
-                const cat = this.handles.get('cat');
-                cat.set(new cat.entityClass(allCats[Math.floor(Math.random()*31)]));
-                console.log(cat);
-            }
-        }
-    };
+defineParticle(({UiParticle, log}) => {
+
+  return class extends UiParticle {
+    update({today, allCats}) {
+      if (today) {
+        const cat = allCats[Math.floor(Math.random()*31)];
+        this.updateSingleton('cat', cat);
+        log(cat);
+      }
+    }
+  };
+
 });
