@@ -130,32 +130,30 @@ public class MainActivity extends Activity {
     });
   }
 
-  @JavascriptInterface
+  private int spawn(String recipe) {
+    /*return*/ sendToShell("{\"message\": \"spawn\", \"recipe\": \"" + recipe + "\"}");
+    return 0;
+  }
+
+    @JavascriptInterface
   public void receive(String json) throws JSONException {
     JSONObject obj = new JSONObject(json);
     String message = obj.getString("message");
     logger.info("Java received message: " + message);
     switch (message) {
       case "ready":
-//        sendToShell("{\"message\": \"spawn\", \"recipe\": \"Notification\"}");
-//        sendToShell("{\"message\": \"spawn\", \"recipe\": \"Restaurants\"}");
-        sendToShell("{\"message\": \"spawn\", \"recipe\": \"CatOfTheDay\"}");
+        spawn("Notification");
+        spawn("Restaurants");
+        spawn("CatOfTheDay");
         break;
       case "slot":
-        if (obj.isNull("content")) {
-          break;
-        }
-        JSONObject content = obj.getJSONObject("content");
-        if (content.isNull("model")) {
-          break;
-        }
-        JSONObject model = content.getJSONObject("model");
-        if (model.isNull("modality")) {
-          int tid = obj.getInt("tid");
-          render(content, tid);
-        } else {
-          String modality = model.getString("modality");
-          processModality(modality, model);
+        int tid = obj.getInt("tid");
+        JSONObject content = obj.optJSONObject("content");
+        if (content != null) {
+          JSONObject model = content.optJSONObject("model");
+          if (model != null) {
+            processSlot(tid, content, model);
+          }
         }
         break;
       default:
@@ -165,14 +163,22 @@ public class MainActivity extends Activity {
   }
 
   /** Handles different slot modalities. */
-  private void processModality(String modality, JSONObject model) throws JSONException {
+  private void processSlot(int tid, JSONObject content, JSONObject model) throws JSONException {
+    String modality = model.optString("modality", "xen");
     switch (modality) {
+      case "xen":
+        render(content, tid);
+        break;
+
       case "notification":
         String text = model.getString("text");
         showNotification(text);
         break;
+
       default:
-        throw new AssertionError("Unhandled modality: " + modality);
+        // TODO(sjmiles): handle unknown modalities gracefully (it's not exceptional)
+        //throw new AssertionError("Unhandled modality: " + modality);
+        break;
     }
   }
 
