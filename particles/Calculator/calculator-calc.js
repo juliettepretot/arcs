@@ -21,9 +21,6 @@
       let resultValue = 0;
 
       switch (operator) {
-        case 'add':
-          resultValue = lhs.value + rhs.value;
-          break;
         case 'subtract':
           resultValue = lhs.value - rhs.value;
           break;
@@ -33,8 +30,10 @@
         case 'divide':
           resultValue = lhs.value / rhs.value;
           break;
+        case 'add':
         default:
-          throw Error('Invalid operator');
+          resultValue = lhs.value + rhs.value;
+          break;
       }
 
       if (lastResult !== resultValue) {

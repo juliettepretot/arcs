@@ -4,9 +4,9 @@ defineParticle(({DomParticle, html}) => {
       return html`
         <select id="operation" on-change="onChange">
           <option value="add">+</option>
-          <option value="subtract">-</option>
+          <option value="divide">-</option>
           <option value="multiply">*</option>
-          <option value="divide">/</option>
+          <option value="subtract">/</option>
         </select>
       `;
     }
