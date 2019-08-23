@@ -21,11 +21,11 @@ defineParticle(({DomParticle, html}) => {
         switch (operator.operator) {
           case 'add':
             modelIndex = 0; break;
-          case 'subtract':
+          case 'divide':
             modelIndex = 1; break;
           case 'multiply':
             modelIndex = 2; break;
-          case 'divide':
+          case 'subtract':
             modelIndex = 3; break;
         }
       }
