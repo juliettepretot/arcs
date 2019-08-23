@@ -31,9 +31,6 @@ defineParticle(({DomParticle, html}) => {
       }
       return {
         modelIndex: modelIndex
-        //{
-        //  modelIndex: modelIndex
-        //}
       };
     }
 
