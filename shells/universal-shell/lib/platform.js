@@ -25,7 +25,14 @@ export const connectToPlatform = async Application => {
     }
   };
   // TODO(sjmiles): not good
-  setTimeout(() => arcsProcess.startTheShell(), 4000);
+  const tryShell = () => {
+    if (!arcsProcess.startTheShell) {
+      setTimeout(tryShell, 1000);
+    } else {
+      arcsProcess.startTheShell();
+    }
+  };
+  setTimeout(tryShell, 500);
   // bus packet handlers
   const dispatcher = {
     ready(packet) {
