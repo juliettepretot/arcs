@@ -26,9 +26,11 @@ public class MainActivity extends Activity {
   /**
    * Indicates whether to use static assets compiled into the apk, or use devserver on the host's
    * localhost (which is on IP 10.0.2.2).
+   *
+   * Start the Arcs dev server (ALDS) via "./tools/sigh devServer"
    */
   // TODO: Pass this value in from Bazel somehow (can I use a flag?). Or use a toggle switch.
-  private static final boolean USE_DEVSERVER = false;
+  private static final boolean USE_DEVSERVER = true;
 
   private static final String SHELL_JS_URL =
           USE_DEVSERVER
@@ -65,7 +67,10 @@ public class MainActivity extends Activity {
 
     TextView refreshButton = new TextView(this);
     refreshButton.setText("Refresh");
-    refreshButton.setOnClickListener(v -> shellWebView.reload());
+    refreshButton.setOnClickListener(v -> {
+      shellWebView.reload();
+      renderingWebView.reload();
+    });
 
     shellWebView = new WebView(this);
     shellWebView.setVisibility(View.GONE);
