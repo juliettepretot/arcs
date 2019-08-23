@@ -48,22 +48,6 @@ export class UiSimpleParticle extends Particle {
   }
 
   /**
-   * Override to return a String defining primary markup for the given slot name.
-   */
-  // getTemplate(slotName: string): string {
-  //   // TODO: only supports a single template for now. add multiple templates support.
-  //   return this.template;
-  // }
-
-  /**
-   * Override to return a String defining the name of the template for the given slot name.
-   */
-  // getTemplateName(slotName: string): string {
-  //   // TODO: only supports a single template for now. add multiple templates support.
-  //   return `default`;
-  // }
-
-  /**
    * Override to return false if the Particle isn't ready to `render()`
    */
   shouldRender(...args): boolean {
@@ -80,30 +64,24 @@ export class UiSimpleParticle extends Particle {
   // This is the default output 'packet', other implementations (modalities) could
   // output other things, or choose different output packets based on hints from 'model'
   renderModel(model) {
-    this.output({
-      template: this.template,
-      model
-    });
+    if (model) {
+      this.output({
+        template: this.template,
+        model
+      });
+    }
   }
 
   /**
    * Override to return a dictionary to map into the template.
    */
   render(stateArgs?): RenderModel {
-    return {};
+    return null;
   }
 
   protected _getStateArgs() {
     return [];
   }
-
-  // forceRenderTemplate(slotName: string = ''): void {
-  //   this.slotProxiesByName.forEach((slot: SlotProxy, name: string) => {
-  //     if (!slotName || (name === slotName)) {
-  //       slot.requestedContentTypes.add('template');
-  //     }
-  //   });
-  // }
 
   fireEvent(slotName: string, {handler, data}): void {
     if (this[handler]) {

@@ -10,15 +10,13 @@
 
 /* global defineParticle */
 
-defineParticle(({DomParticle, log}) => {
+defineParticle(({UiParticle, log}) => {
 
-  return class extends DomParticle {
+  return class extends UiParticle {
     update({today, allCats}) {
       if (today) {
         const cat = allCats[Math.floor(Math.random()*31)];
         this.updateSingleton('cat', cat);
-        // const cat = this.handles.get('cat');
-        // cat.set(new cat.entityClass(cat));
         log(cat);
       }
     }
