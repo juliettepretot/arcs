@@ -62,10 +62,13 @@ export class UiSimpleParticle extends Particle {
   // This is the default output 'packet', other implementations (modalities) could
   // output other things, or choose different output packets based on hints from 'model'
   renderModel(model) {
-    this.output({
-      template: this.template,
-      model: model || {}
-    });
+    const template = this.template;
+    if (template || model) {
+      this.output({
+        template,
+        model: model || {}
+      });
+    }
   }
 
   /**
