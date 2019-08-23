@@ -23,6 +23,22 @@ import java.util.logging.Logger;
  * Main class for the Bazel Android "Hello, World" app.
  */
 public class MainActivity extends Activity {
+  /**
+   * Indicates whether to use static assets compiled into the apk, or use devserver on the host's
+   * localhost (which is on IP 10.0.2.2).
+   */
+  // TODO: Pass this value in from Bazel somehow (can I use a flag?). Or use a toggle switch.
+  private static final boolean USE_DEVSERVER = false;
+
+  private static final String SHELL_JS_URL =
+          USE_DEVSERVER
+                  ? "http://10.0.2.2:8786/shells/pipes-shell/web/index.html?log"
+                  : "file:///android_asset/pipes_shell_dist/index.html?log";
+                  
+  private static final String SHELL_SURFACE_URL =
+          USE_DEVSERVER
+                  ? "http://10.0.2.2:8786/shells/pipes-shell/surface/surface.html"
+                  : "file:///android_asset/pipes_surface_dist/surface.html";
 
   private static final Logger logger = Logger.getLogger(MainActivity.class.getName());
   private static final String CHANNEL_ID = "arcs_channel_id";
@@ -55,12 +71,12 @@ public class MainActivity extends Activity {
     shellWebView.setVisibility(View.GONE);
     setWebviewSettings(shellWebView.getSettings());
     shellWebView.addJavascriptInterface(this, "Android");
-    shellWebView.loadUrl("file:///android_asset/pipes_shell_dist/index.html?log");
+    shellWebView.loadUrl(SHELL_JS_URL);
 
     renderingWebView = new WebView(this);
     setWebviewSettings(renderingWebView.getSettings());
     renderingWebView.addJavascriptInterface(this, "Android");
-    renderingWebView.loadUrl("file:///android_asset/pipes_surface_dist/surface.html");
+    renderingWebView.loadUrl(SHELL_SURFACE_URL);
 
     WebView.setWebContentsDebuggingEnabled(true);
 
