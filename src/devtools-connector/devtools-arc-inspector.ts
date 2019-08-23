@@ -116,7 +116,7 @@ class DevtoolsArcInspector implements ArcInspector {
 
   public pecMessage(name: string, pecMsgBody: object, pecMsgCount: number, stackString: string) {
     if (!DevtoolsConnection.isConnected) return;
-    
+    pecMsgBody = JSON.parse(JSON.stringify(pecMsgBody));
     const stack = this._extractStackFrames(stackString);
     this.arcDevtoolsChannel.send({
       messageType: 'PecLog',

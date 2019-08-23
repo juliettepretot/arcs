@@ -64,7 +64,7 @@ export class IdGenerator {
 export class Id {
 
   /** The Session ID of the session during which the ID got created. See IdGenerator class. */
-  readonly root: string;
+  root: string;
 
   /** The components of the idTree. */
   readonly idTree: string[] = [];

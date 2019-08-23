@@ -18,5 +18,6 @@ self.onmessage = function(e) {
   // TODO(sjmiles): happens too late for modules that immediately construct loggers, but
   // soon enough for `log` injected into Particle.
   global.logLevel = logLevel;
-  new ParticleExecutionContext(e.ports[0], Id.fromString(id), IdGenerator.newSession(), new PlatformLoader(base));
+  const nid = Id.fromString(id);
+  new ParticleExecutionContext(e.ports[0], nid, IdGenerator.createWithSessionIdForTesting(nid.root), new PlatformLoader(base));
 };

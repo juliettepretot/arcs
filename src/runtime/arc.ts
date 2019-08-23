@@ -122,7 +122,10 @@ constructor({id, context, pecFactories, slotComposer, loader, storageKey, storag
     this.inspectorFactory = inspectorFactory;
     this.inspector = inspectorFactory && inspectorFactory.create(this);
     this.storageKey = storageKey;
-    const ports = this.createPorts(this.generateID());
+    const iiid = this.generateID();
+    // horror to make pec sessions constant for the hackathon.
+    iiid.root = this.id.root;
+    const ports = this.createPorts(iiid);
     this.pec = new ParticleExecutionHost(slotComposer, this, ports);
     this.storageProviderFactory = storageProviderFactory || new StorageProviderFactory(this.id);
     
