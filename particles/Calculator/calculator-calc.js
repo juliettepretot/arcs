@@ -12,7 +12,7 @@
   return class extends DomParticle {
     update({lhs, rhs, operator}, state) {
       if (!!lhs && !!rhs) {
-        const operatorVal = operator.operator;
+        const operatorVal = (operator && operator.operator) || null;
         this.processAnswer(lhs, operatorVal, rhs);
       }
     }
