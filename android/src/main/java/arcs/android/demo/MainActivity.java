@@ -1,4 +1,4 @@
-package com.example.bazel;
+package arcs.android.demo;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
@@ -12,16 +12,11 @@ import android.view.View;
 import android.webkit.JavascriptInterface;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
-import android.widget.Button;
-import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
-
 import org.json.JSONException;
 import org.json.JSONObject;
-
-import java.util.Objects;
 import java.util.logging.Logger;
 
 /**
