@@ -15,7 +15,10 @@
 defineParticle(({UiParticle, html, log}) => {
 
 const template = html`
-<div hidden="{{hidden}}">Today's cat is <span>{{name}}</span>! This cat is: <span>{{description}}</span>!</div>
+<div hidden="{{hidden}}">
+    Today's cat is <span>{{name}}</span>! This cat is: <span>{{description}}</span>!
+    <img src={{photo}} alt="cat" width="200">
+</div>
 `;
 
   return class extends UiParticle {
@@ -28,7 +31,8 @@ const template = html`
         return {
           hidden: !show,
           name: cat.name,
-          description: cat.description
+          description: cat.description,
+          photo: cat.photo
         };
       }
     }

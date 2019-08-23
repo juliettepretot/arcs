@@ -1,6 +1,7 @@
 schema Cat
     Text name
     Text description
+    Text photo
 
 schema Notification
     Boolean triggered
