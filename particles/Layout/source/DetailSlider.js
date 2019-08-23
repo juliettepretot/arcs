@@ -22,7 +22,8 @@ defineParticle(({UiParticle, html}) => {
     bottom: 0;
     left: 0;
     pointer-events: all;
-    transform: translate3d(0, 100vh, 0);
+    /*transform: translate3d(0, 100vh, 0);*/
+    transform: translate3d(0, 1000px, 0);
   }
   [detail-slider][open] {
     transform: translate3d(0, 0, 0);
@@ -55,7 +56,8 @@ defineParticle(({UiParticle, html}) => {
     background-color: white;
     box-shadow: 0 0 8px 4px rgba(102,102,102,0.25);
     border-radius: 16px;
-    transform: translate3d(0, 100vh, 0);
+    /*transform: translate3d(0, 100vh, 0);*/
+    transform: translate3d(0, 1000px, 0);
     transition: transform 200ms ease-out;
   }
   @media(min-width: 600px) {
