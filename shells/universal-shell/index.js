@@ -41,7 +41,7 @@ const Application = {
         // spawn 'Restaurants' arc
         const tid = Application.send({message: 'spawn', recipe: 'Restaurants'});
         // add 'Reservations' recipes
-        Application.send({tid, message: 'recipe', recipe: 'MakeReservations'});
+        //Application.send({tid, message: 'recipe', recipe: 'MakeReservations'});
         // remember the arc's transaction identifier
         this.restaurantsTid = tid;
       }
