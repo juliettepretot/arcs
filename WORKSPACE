@@ -87,6 +87,19 @@ load("@robolectric//bazel:robolectric.bzl", "robolectric_repositories")
 
 robolectric_repositories()
 
+# AndroidX Test (instrumentation tests & devices)
+
+ATS_VERSION = "androidx-test-1.2.0"
+ATS_SHA = "01a3a6a88588794b997b46a823157aea06be9bcdc41800b61199893121ef26a3"
+http_archive(
+    name = "android_test_support",
+    sha256 = ATS_SHA,
+    strip_prefix = "android-test-%s" % ATS_VERSION,
+    urls = ["https://github.com/android/android-test/archive/%s.tar.gz" % ATS_VERSION],
+)
+load("@android_test_support//:repo.bzl", "android_test_repositories")
+android_test_repositories()
+
 # Python
 
 http_archive(
