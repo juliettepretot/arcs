@@ -89,15 +89,19 @@ robolectric_repositories()
 
 # AndroidX Test (instrumentation tests & devices)
 
-ATS_VERSION = "androidx-test-1.2.0"
-ATS_SHA = "01a3a6a88588794b997b46a823157aea06be9bcdc41800b61199893121ef26a3"
+ATS_VERSION = "androidx-test-1.3.0-alpha03"
+
+ATS_SHA = "8a163b601e66fee779060d7071d137117df3737f225bbb12b5628d72e6dc70dd"
+
 http_archive(
     name = "android_test_support",
     sha256 = ATS_SHA,
     strip_prefix = "android-test-%s" % ATS_VERSION,
     urls = ["https://github.com/android/android-test/archive/%s.tar.gz" % ATS_VERSION],
 )
+
 load("@android_test_support//:repo.bzl", "android_test_repositories")
+
 android_test_repositories()
 
 # Python
