@@ -25,13 +25,14 @@ import kotlin.reflect.KClass
  */
 fun scanForParticles(host: KClass<out ProdHost> = ProdHost::class): Array<ParticleRegistration> =
     ServiceLoader.load(Particle::class.java).iterator().asSequence().filter { particle ->
-            isParticleForHost(host, particle::class.java)
-        }.map { particle ->
-            particle.javaClass.kotlin.toParticleIdentifier() to object : ParticleConstructor.Empty() {
+        isParticleForHost(host, particle::class.java)
+    }.map { particle ->
+        particle.javaClass.kotlin.toParticleIdentifier() to
+            object : ParticleConstructor.Empty() {
                 override fun invoke(): Particle =
                     particle.javaClass.getDeclaredConstructor().newInstance()
             }
-        }.toList().toTypedArray()
+    }.toList().toTypedArray()
 
 private fun isParticleForHost(host: KClass<out ProdHost>, particle: Class<out Particle>) =
     host == (particle.getAnnotation(TargetHost::class.java)?.value ?: ProdHost::class)
