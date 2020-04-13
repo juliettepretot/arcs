@@ -86,7 +86,7 @@ class ArcHostContextParticle : AbstractArcHostParticle() {
     suspend fun readArcHostContext(
         arcHostContext: ArcHostContext,
         hostId: String,
-        instantiateParticle: suspend (ParticleIdentifier) -> Particle
+        instantiateParticle: suspend (ParticleIdentifier, Plan.Particle) -> Particle
     ): ArcHostContext? {
         val arcId = arcHostContext.arcId
 
@@ -104,7 +104,10 @@ class ArcHostContextParticle : AbstractArcHostParticle() {
 
             // construct a map of particleName to Particle instance
             val instantiatedParticles = particleEntities.map {
-                it.particleName to instantiateParticle(ParticleIdentifier.from(it.location))
+                it.particleName to instantiateParticle(
+                    ParticleIdentifier.from(it.location),
+                    arcHostContext.particles[it.particleName]!!.planParticle
+                )
             }.associateBy({ it.first }, { it.second })
 
             // construct a map from particleName to a list of handleNames mapped to HandleConnection
